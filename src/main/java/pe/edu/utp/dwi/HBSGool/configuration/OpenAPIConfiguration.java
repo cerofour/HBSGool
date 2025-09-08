@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenAPIConfiguration {
 
 	@Bean
-	public OpenAPI productServiceAPI() {
+	public OpenAPI productServiceApi() {
 		return new OpenAPI()
 				.info(new Info()
 						.title("HBS Gool API")
@@ -20,6 +20,6 @@ public class OpenAPIConfiguration {
 						.license(new License().name("Mopri License")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Refer to the Docs")
-						.url("https://jorgemartinezgod.com"));
+						.url("https://github.com/cerofour"));
 	}
 }

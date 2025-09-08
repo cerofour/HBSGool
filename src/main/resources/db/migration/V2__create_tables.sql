@@ -57,7 +57,7 @@ CREATE TABLE usuario_rol (
 
 CREATE TABLE cancha (
 	id_cancha UUID PRIMARY KEY NOT NULL,
-	cancha VARCHAR(255) UNIQUE NOT NULL,
+	nombre VARCHAR(255) UNIQUE NOT NULL,
 	descripcion TEXT NULL,
 	ancho NUMERIC(5, 2) NULL,
 	largo NUMERIC(5, 2) NULL,
