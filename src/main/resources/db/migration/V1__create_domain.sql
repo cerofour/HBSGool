@@ -1,0 +1,2 @@
+CREATE DOMAIN dni AS CHAR(8)
+CHECK (VALUE ~ '^\d{8}$');
