@@ -1,4 +1,10 @@
-INSERT INTO estado_cancha (id_estado_cancha, estado_cancha)
+INSERT INTO Cancha (idCancha, nombre, descripcion, precioHora, estadoCancha)
 VALUES
-  ('0bf3e038-9cc3-4463-a01e-9234501739ce', 'Disponible'),
-  ('348a3ab8-a836-476c-9610-13d0a2c2a705', 'Inhabilitada');
+    (1, 'Cancha #1', 'Cancha sintética de 40x60m2', 80.0, 'Disponible'),
+    (2, 'Cancha #2', 'Cancha sintética de 40x60m2', 95.0, 'Disponible'),
+    (3, 'Cancha #3', 'Cancha sintética de 40x60m2', 100.0, 'Mantenimiento');
+
+INSERT INTO Usuario (rol, nombre, apellidoPaterno, apellidoMaterno, dni, telefono, email, activo, contrasena)
+VALUES
+    ('Usuario', 'Diego', 'Llacsahuanga', 'Buques', '73266267', '976849906', 'llacsahuanga.buques@gmail.com', True, '123456'),
+    ('Usuario', 'Kevin', 'Huanca', 'Fernandez', '73266264', '976849916', 'kev.huanca@gmail.com', True, '123456');

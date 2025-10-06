@@ -1,115 +1,143 @@
-
-CREATE TABLE usuario (
-	id_usuario UUID PRIMARY KEY NOT NULL,
-	nombre VARCHAR(255) NOT NULL,
-	apellido_paterno VARCHAR(255) NOT NULL,
-	apellido_materno VARCHAR(255) NOT NULL,
-	dni dni UNIQUE NOT NULL,
+CREATE TABLE Usuario (
+	idUsuario INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	nombre VARCHAR(40) NOT NULL,
+	apellidoPaterno VARCHAR(40) NOT NULL,
+	apellidoMaterno VARCHAR(40) NOT NULL,
+	dni CHAR(8) UNIQUE NOT NULL,
 	telefono CHAR(9) UNIQUE NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
-	activo BOOLEAN NOT NULL,
-	CONSTRAINT chk_usuario_email CHECK (email ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$'),
-	CONSTRAINT chk_usuario_telefono CHECK (telefono ~ '^\d{9}$')
+	activo BOOLEAN NOT NULL DEFAULT TRUE,
+	contrasena VARCHAR(255) NOT NULL,
+	rol VARCHAR(16) NOT NULL,
+	CONSTRAINT chkUsuarioEmail CHECK (email ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$'),
+	CONSTRAINT chkUsuarioTelefono CHECK (telefono ~ '^\d{9}$'),
+	CONSTRAINT chkUsuarioDni CHECK (dni ~ '^\d{8}$')
 
 );
 
 
-CREATE TABLE rol (
-	id_rol UUID PRIMARY KEY NOT NULL,
-	rol VARCHAR(100) UNIQUE NOT NULL
+CREATE TABLE Cancha (
+	idCancha SMALLINT PRIMARY KEY NOT NULL,
+	nombre VARCHAR(100) UNIQUE NOT NULL,
+	descripcion VARCHAR(120) NULL,
+	precioHora NUMERIC(10, 2) NOT NULL,
+	estadoCancha VARCHAR(16) NOT NULL,
+	CONSTRAINT chkCanchaPrecioHora CHECK (precioHora >= 0)
 
 );
 
 
-CREATE TABLE estado_reservacion (
-	id_estado_reservacion UUID PRIMARY KEY NOT NULL,
-	estado_reservacion VARCHAR(100) UNIQUE NOT NULL
+CREATE TABLE Banner (
+	banner VARCHAR(100) UNIQUE NOT NULL,
+	activo BOOLEAN NOT NULL DEFAULT TRUE
 
 );
 
 
-CREATE TABLE estado_cancha (
-	id_estado_cancha UUID PRIMARY KEY NOT NULL,
-	estado_cancha VARCHAR(100) UNIQUE NOT NULL
+CREATE TABLE Cajero (
+	idCajero SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	nombre VARCHAR(40) NOT NULL,
+	apellidoPaterno VARCHAR(40) NOT NULL,
+	apellidoMaterno VARCHAR(40) NOT NULL,
+	dni CHAR(8) UNIQUE NOT NULL,
+	activo BOOLEAN NOT NULL DEFAULT TRUE,
+	contrasena VARCHAR(255) NOT NULL,
+	CONSTRAINT chkCajeroDni CHECK (dni ~ '^\d{8}$')
+
 
 );
 
 
-CREATE TABLE caja (
-	id_caja UUID PRIMARY KEY NOT NULL,
-	usuario_id UUID NOT NULL,
-	total NUMERIC(6, 2) NOT NULL,
-	fecha DATE NOT NULL DEFAULT CURRENT_DATE,
-	FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
-	CONSTRAINT chk_caja_fecha CHECK (fecha >= CURRENT_DATE),
-	CONSTRAINT chk_caja_total CHECK (total >= 0)
-
-);
-
-CREATE TABLE usuario_rol (
-    usuario_id UUID NOT NULL,
-    rol_id UUID NOT NULL,
-    PRIMARY KEY (usuario_id, rol_id),
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
-    FOREIGN KEY (rol_id) REFERENCES rol(id_rol)
-);
-
-
-CREATE TABLE cancha (
-	id_cancha UUID PRIMARY KEY NOT NULL,
-	nombre VARCHAR(255) UNIQUE NOT NULL,
-	descripcion TEXT NULL,
-	ancho NUMERIC(5, 2) NULL,
-	largo NUMERIC(5, 2) NULL,
-	es_sintetico BOOLEAN NOT NULL,
-	precio_hora NUMERIC(10, 2) NOT NULL,
-	estado_cancha_id UUID NOT NULL,
-	FOREIGN KEY (estado_cancha_id) REFERENCES estado_cancha(id_estado_cancha),
-	CONSTRAINT chk_cancha_ancho CHECK (ancho >= 0),
-	CONSTRAINT chk_cancha_largo CHECK (largo >= 0),
-	CONSTRAINT chk_cancha_precio_hora CHECK (precio_hora >= 0)
+CREATE TABLE Review (
+	idReview INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	usuarioId INT NOT NULL,
+	rating CHAR(1) NOT NULL,
+	comentario VARCHAR(255) NOT NULL,
+	creado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario),
+	CONSTRAINT chkReviewRating CHECK (rating IN ('1', '2', '3', '4', '5'))
 
 );
 
 
-CREATE TABLE reservacion (
-	id_reservacion UUID PRIMARY KEY NOT NULL,
-	usuario_id UUID UNIQUE NOT NULL,
-	cancha_id UUID NOT NULL,
-	estado_reservacion_id UUID NOT NULL,
-	tiempo_inicio TIMESTAMP UNIQUE NOT NULL,
+CREATE TABLE Reservacion (
+	idReservacion INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	usuarioId INT,
+	canchaId SMALLINT NOT NULL,
+	cajeroId SMALLINT,
+	tiempoInicio TIMESTAMP UNIQUE NOT NULL,
+	dni CHAR(8) NOT NULL,
 	duracion INTERVAL NOT NULL,
-	dnis dni[] NOT NULL,
-	precio_total NUMERIC(10, 2) NOT NULL,
-	FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
-	FOREIGN KEY (cancha_id) REFERENCES cancha(id_cancha),
-	FOREIGN KEY (estado_reservacion_id) REFERENCES estado_reservacion(id_estado_reservacion),
-	CONSTRAINT chk_reservacion_precio_total CHECK (precio_total >= 0)
+	precioTotal NUMERIC(10, 2) NOT NULL,
+	estadoReservacion VARCHAR(16) NOT NULL,
+	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario),
+	FOREIGN KEY (canchaId) REFERENCES Cancha(idCancha),
+	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero),
+	CONSTRAINT chkReservacionPrecioTotal CHECK (precioTotal >= 0),
+	CONSTRAINT chkReservacionDuracion CHECK (duracion >= INTERVAL '1 hour'),
+	CONSTRAINT chkReservacionDni CHECK (dni ~ '^\d{8}$')
+
 
 );
 
 
-CREATE TABLE review (
-	id_review UUID PRIMARY KEY NOT NULL,
-	usuario_id UUID NOT NULL,
-	cancha_id UUID NOT NULL,
-	rating SMALLINT NOT NULL,
-	comentario TEXT NOT NULL,
-	creado TIMESTAMP NOT NULL,
-	FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
-	FOREIGN KEY (cancha_id) REFERENCES cancha(id_cancha),
-	CONSTRAINT chk_review_rating CHECK (rating >= 0 AND rating <= 5)
+CREATE TABLE SesionCajero (
+	idSesionCajero INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	cajeroId SMALLINT NOT NULL,
+	montoInicial NUMERIC(6, 2) NOT NULL,
+	fechaApertura TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero),
+	CONSTRAINT chkSesionCajeroMontoInicial CHECK (montoInicial >= 0)
 
 );
 
 
-CREATE TABLE penalidad (
-	id_penalidad UUID PRIMARY KEY NOT NULL,
-	usuario_id UUID NOT NULL,
-	reservacion_id UUID NOT NULL,
-	razon TEXT NOT NULL,
-	fecha_aplicada TIMESTAMP NOT NULL,
-	FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
-	FOREIGN KEY (reservacion_id) REFERENCES reservacion(id_reservacion)
+CREATE TABLE Pago (
+	idPago INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	reservacionId INT NOT NULL,
+	sesionCajeroId INT NOT NULL,
+	cantidadDinero NUMERIC(6, 2) NOT NULL,
+	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	medioPago VARCHAR(16) NOT NULL,
+	FOREIGN KEY (reservacionId) REFERENCES Reservacion(idReservacion),
+	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
+	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0)
 
 );
+
+
+CREATE TABLE CierreCajero (
+	idCierreCajero INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	sesionCajeroId INT NOT NULL,
+	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	montoTeorico NUMERIC(6, 2) NOT NULL,
+	montoReal NUMERIC(6, 2) NOT NULL,
+	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
+	CONSTRAINT chkCierreCajeroMontoTeorico CHECK (montoTeorico >= 0),
+	CONSTRAINT chkCierreCajeroMontoReal CHECK (montoReal >= 0)
+
+);
+
+
+CREATE TABLE ConfirmacionPagoRemoto (
+	idConfirmacionPagoRemoto INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	pagoId INT NOT NULL,
+	cajeroId INT NOT NULL,
+	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	evidencia VARCHAR NOT NULL,
+	FOREIGN KEY (pagoId) REFERENCES Pago(idPago),
+	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero)
+
+
+);
+
+
+CREATE TABLE MovimientoBoveda (
+	idMovimientoBoveda INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+	cierreCajeroId INT NOT NULL,
+	tipoMovimientoBoveda VARCHAR(16) NOT NULL,
+	motivo VARCHAR(32) NOT NULL,
+	FOREIGN KEY (cierreCajeroId) REFERENCES CierreCajero(idCierreCajero)
+
+);
+
