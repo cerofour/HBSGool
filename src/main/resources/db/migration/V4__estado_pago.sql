@@ -1,0 +1,2 @@
+ALTER TABLE Pago
+ADD COLUMN estadoPago VARCHAR(16);
