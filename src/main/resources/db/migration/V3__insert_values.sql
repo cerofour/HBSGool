@@ -8,3 +8,9 @@ INSERT INTO Usuario (rol, nombre, apellidoPaterno, apellidoMaterno, dni, telefon
 VALUES
     ('Usuario', 'Diego', 'Llacsahuanga', 'Buques', '73266267', '976849906', 'llacsahuanga.buques@gmail.com', True, '123456'),
     ('Usuario', 'Kevin', 'Huanca', 'Fernandez', '73266264', '976849916', 'kev.huanca@gmail.com', True, '123456');
+
+INSERT INTO Review (usuarioId, rating, comentario)
+VALUES
+    (1, '5', 'Excelente servicio, las canchas están en muy buen estado'),
+    (2, '4', 'Buena experiencia, recomendable'),
+    (1, '3', 'Servicio regular, podría mejorar');
