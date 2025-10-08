@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -23,6 +25,17 @@ public class ReviewService {
 
     public ReviewDto getById(Integer id) {
         return repository.findById(id).map(this::toDto).orElse(null);
+    }
+
+    public ReviewDto createReview(CreateReviewDto createDto) {
+        ReviewEntity entity = new ReviewEntity();
+        entity.setUsuarioId(createDto.getUsuarioId());
+        entity.setRating(createDto.getRating());
+        entity.setComentario(createDto.getComentario());
+        entity.setCreado(LocalDateTime.now());
+        
+        ReviewEntity saved = repository.save(entity);
+        return toDto(saved);
     }
 
     private ReviewDto toDto(ReviewEntity e) {

@@ -1,10 +1,12 @@
 package pe.edu.utp.dwi.HBSGool.review;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,5 +33,11 @@ public class ReviewController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping
+    public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody CreateReviewDto createDto) {
+        ReviewDto created = service.createReview(createDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }
