@@ -13,7 +13,6 @@ import java.util.List;
 @RequestMapping("/api/cancha")
 @RequiredArgsConstructor
 public class CanchaController {
-
 	private final CanchaService canchaService;
 
 	@GetMapping

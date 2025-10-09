@@ -17,7 +17,7 @@ public class OpenAPIConfiguration {
 						.title("HBS Gool API")
 						.summary("Documentación de la API de HBS Gool")
 						.version("0.0.1")
-						.license(new License().name("Mopri License")))
+						.license(new License().name("No License")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Refer to the Docs")
 						.url("https://github.com/cerofour"));
