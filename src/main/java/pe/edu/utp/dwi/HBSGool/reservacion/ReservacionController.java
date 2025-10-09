@@ -35,4 +35,11 @@ public class ReservacionController {
         }
         return ResponseEntity.ok(dto);
     }
+
+    @PostMapping
+    public ResponseEntity<ReservacionDto> createReservation(@RequestBody ReservacionDto reservacionDto) {
+        //TODO: Falta poder diferenciar entre usuario y administrador, pero seria casi lo mismo
+
+        return ResponseEntity.ok(service.createReservation(reservacionDto));
+    }
 }
