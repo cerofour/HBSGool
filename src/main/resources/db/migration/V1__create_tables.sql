@@ -8,7 +8,7 @@ CREATE TABLE Usuario (
 	email VARCHAR(255) UNIQUE NOT NULL,
 	activo BOOLEAN NOT NULL DEFAULT TRUE,
 	contrasena VARCHAR(255) NOT NULL,
-	rol VARCHAR(16) NOT NULL,
+	rol VARCHAR(16) NOT NULL DEFAULT 'ROLE_USER',
 	CONSTRAINT chkUsuarioEmail CHECK (email ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$'),
 	CONSTRAINT chkUsuarioTelefono CHECK (telefono ~ '^\d{9}$'),
 	CONSTRAINT chkUsuarioDni CHECK (dni ~ '^\d{8}$')
@@ -36,14 +36,9 @@ CREATE TABLE Banner (
 
 CREATE TABLE Cajero (
 	idCajero SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-	nombre VARCHAR(40) NOT NULL,
-	apellidoPaterno VARCHAR(40) NOT NULL,
-	apellidoMaterno VARCHAR(40) NOT NULL,
-	dni CHAR(8) UNIQUE NOT NULL,
+	usuarioId SMALLINT NOT NULL,
 	activo BOOLEAN NOT NULL DEFAULT TRUE,
-	contrasena VARCHAR(255) NOT NULL,
-	CONSTRAINT chkCajeroDni CHECK (dni ~ '^\d{8}$')
-
+	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario)
 
 );
 
@@ -99,10 +94,11 @@ CREATE TABLE Pago (
 	cantidadDinero NUMERIC(6, 2) NOT NULL,
 	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	medioPago VARCHAR(16) NOT NULL,
+	estadoPago VARCHAR(16) NOT NULL DEFAULT 'PENDIENTE',
 	FOREIGN KEY (reservacionId) REFERENCES Reservacion(idReservacion),
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
-	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0)
-
+	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0),
+    CONSTRAINT chkPagoEstadoPago CHECK (estadoPago in ('PENDIENTE', 'RECHAZADO', 'CONFIRMADO'))
 );
 
 
@@ -134,10 +130,10 @@ CREATE TABLE ConfirmacionPagoRemoto (
 
 CREATE TABLE MovimientoBoveda (
 	idMovimientoBoveda INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-	cierreCajeroId INT NOT NULL,
+	sesionCajeroId INT NOT NULL,
 	tipoMovimientoBoveda VARCHAR(16) NOT NULL,
 	motivo VARCHAR(32) NOT NULL,
-	FOREIGN KEY (cierreCajeroId) REFERENCES CierreCajero(idCierreCajero)
+	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero)
 
 );
 
