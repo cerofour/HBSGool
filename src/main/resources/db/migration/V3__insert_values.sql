@@ -8,3 +8,4 @@ INSERT INTO Usuario (rol, nombre, apellidoPaterno, apellidoMaterno, dni, telefon
 VALUES
     ('Usuario', 'Diego', 'Llacsahuanga', 'Buques', '73266267', '976849906', 'llacsahuanga.buques@gmail.com', True, '123456'),
     ('Usuario', 'Kevin', 'Huanca', 'Fernandez', '73266264', '976849916', 'kev.huanca@gmail.com', True, '123456');
+

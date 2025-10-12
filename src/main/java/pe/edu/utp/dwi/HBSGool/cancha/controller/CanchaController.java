@@ -21,4 +21,12 @@ public class CanchaController {
 		return canchaService.findAll();
 	}
 
+	@org.springframework.web.bind.annotation.PatchMapping("/{id}")
+	public CanchaEntity patchCancha(
+			@org.springframework.web.bind.annotation.PathVariable("id") Integer id,
+			@org.springframework.web.bind.annotation.RequestBody pe.edu.utp.dwi.HBSGool.cancha.model.CanchaPatchDTO dto
+	) {
+		return canchaService.patchCancha(id, dto);
+	}
+
 }
