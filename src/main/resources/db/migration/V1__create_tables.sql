@@ -130,7 +130,7 @@ CREATE TABLE ConfirmacionPagoRemoto (
 
 CREATE TABLE MovimientoBoveda (
 	idMovimientoBoveda INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-	sesionCajeroId INT NOT NULL,
+	sesionCajeroId INT,
 	tipoMovimientoBoveda VARCHAR(16) NOT NULL,
 	monto DECIMAL(6, 2) NOT NULL,
 	motivo VARCHAR(32) NOT NULL,
