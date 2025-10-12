@@ -38,9 +38,7 @@ CREATE TABLE Cajero (
 	idCajero SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
 	usuarioId SMALLINT NOT NULL,
 	activo BOOLEAN NOT NULL DEFAULT TRUE,
-	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario),
-	CONSTRAINT chkCajeroDni CHECK (dni ~ '^\d{8}$')
-
+	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario)
 
 );
 
@@ -96,7 +94,7 @@ CREATE TABLE Pago (
 	cantidadDinero NUMERIC(6, 2) NOT NULL,
 	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	medioPago VARCHAR(16) NOT NULL,
-	estadoPago VARCHAR(16) NOT NULL DEFAULT 'PENDIENTE'
+	estadoPago VARCHAR(16) NOT NULL DEFAULT 'PENDIENTE',
 	FOREIGN KEY (reservacionId) REFERENCES Reservacion(idReservacion),
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
 	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0),
@@ -132,7 +130,7 @@ CREATE TABLE ConfirmacionPagoRemoto (
 
 CREATE TABLE MovimientoBoveda (
 	idMovimientoBoveda INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-	sesion INT NOT NULL,
+	sesionCajeroId INT NOT NULL,
 	tipoMovimientoBoveda VARCHAR(16) NOT NULL,
 	motivo VARCHAR(32) NOT NULL,
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero)
