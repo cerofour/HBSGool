@@ -14,7 +14,7 @@ public class CajeroController {
 	private final CajeroService cashierService;
 
 	public RegisterCashierResult createCashier(RegisterRequestDTO registerRequestDTO) {
-		cashierService.createCashier(registerRequestDTO);
+		return cashierService.createCashier(registerRequestDTO);
 	}
 
 }

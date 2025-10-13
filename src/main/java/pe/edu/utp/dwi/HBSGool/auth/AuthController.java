@@ -31,7 +31,7 @@ public class AuthController {
 			return ResponseEntity.ok(authService.register(req));
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(
-					new RegisterUserResult(false, null, null, null, null, null)
+					new RegisterUserResult(false, null, null, null, null, null, null, null)
 			);
 		}
 	}
