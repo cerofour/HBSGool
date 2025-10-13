@@ -23,6 +23,7 @@ import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +57,10 @@ public class ReservacionService {
         }
 
         return page.map(this::toDto);
+    }
+
+    public Optional<ReservacionEntity> findById(Integer reservationId) {
+        return repository.findById(reservationId);
     }
 
     public ReservacionDto getById(Integer id) {
@@ -98,10 +103,10 @@ public class ReservacionService {
                 .estadoReservacion("POR CONFIRMAR")
                 .build();
 
+        repository.save(reservation);
+
         // Guardamos el archivo de evidencia
         String evidencePath = fileStorageService.saveEvidenceFile(evidencia, reservation.getIdReservacion());
-
-        repository.save(reservation);
 
         PagoEntity payment = pagoService.createPayment(
                 reservation.getIdReservacion(),
@@ -176,5 +181,19 @@ public class ReservacionService {
         } else {
             return minutes + " minute" + (minutes > 1 ? "s" : "");
         }
+    }
+
+    public Page<ReservacionDto> listCurrentUserReservations(Pageable pageable) {
+
+        UsuarioEntity currentUser = authService.getCurrentUser()
+                .orElseThrow(() -> new UnauthenticatedException("No hay un usuario autenticado en este momento."));
+
+        return repository.findByUsuarioId(currentUser.getUserId(), pageable).map(this::toDto);
+    }
+
+    public void markAsConfirmed(ReservacionEntity reservation) {
+        reservation.setEstadoReservacion("CONFIRMADA");
+
+        repository.save(reservation);
     }
 }
