@@ -30,4 +30,6 @@ public class PagoEntity {
     private String medioPago;
 
     private String estadoPago;
+
+    private String evidencia;
 }

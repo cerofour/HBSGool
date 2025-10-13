@@ -13,7 +13,7 @@ public class BovedaService {
         return toDto(repositoy.save(
                 BovedaEntity.builder()
                         .tipoMovimientoBoveda(bovedaDto.getTipoMovimientoBoveda())
-                        .saldo(bovedaDto.getSaldo())
+                        .monto(bovedaDto.getSaldo())
                         .motivo(bovedaDto.getMotivo())
                         .sesionCajeroId(bovedaDto.getSesionCajeroId())
                         .build()
@@ -25,7 +25,7 @@ public class BovedaService {
     private BovedaDto toDto(BovedaEntity entity) {
         return BovedaDto.builder()
                 .idMovimientoBoveda(entity.getIdMovimientoBoveda())
-                .saldo(entity.getSaldo())
+                .saldo(entity.getMonto())
                 .motivo(entity.getMotivo())
                 .sesionCajeroId(entity.getSesionCajeroId())
                 .tipoMovimientoBoveda(entity.getTipoMovimientoBoveda())

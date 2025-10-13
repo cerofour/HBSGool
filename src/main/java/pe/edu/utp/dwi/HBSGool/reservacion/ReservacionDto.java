@@ -14,7 +14,7 @@ public class ReservacionDto {
 
     private Integer idReservacion;
     private Integer usuarioId;
-    private Short canchaId;
+    private Integer canchaId;
     private Short cajeroId;
     private LocalDateTime tiempoInicio;
     private String dni;

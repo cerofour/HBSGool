@@ -6,6 +6,7 @@ import pe.edu.utp.dwi.HBSGool.cancha.model.CanchaEntity;
 import pe.edu.utp.dwi.HBSGool.cancha.repository.CanchaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,5 +30,9 @@ public class CanchaService {
 	System.out.println("Cancha después de modificar: " + cancha);
 
 	return repository.save(cancha);
+	}
+
+	public Optional<CanchaEntity> findByCanchaId(Integer id) {
+		return repository.findById(id);
 	}
 }

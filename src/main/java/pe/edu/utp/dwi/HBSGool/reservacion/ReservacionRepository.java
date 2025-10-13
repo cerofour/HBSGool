@@ -16,7 +16,7 @@ public interface ReservacionRepository extends JpaRepository<ReservacionEntity, 
     Page<ReservacionEntity> findByUsuarioId(Integer usuarioId, Pageable pageable);
 
     // Buscar por cancha
-    Page<ReservacionEntity> findByCanchaId(Short canchaId, Pageable pageable);
+    Page<ReservacionEntity> findByCanchaId(Integer canchaId, Pageable pageable);
 
     // Buscar por estado
     Page<ReservacionEntity> findByEstadoReservacion(String estado, Pageable pageable);
@@ -41,7 +41,7 @@ public interface ReservacionRepository extends JpaRepository<ReservacionEntity, 
                 AND (tiempoInicio + duracion) > :startTime
             """, nativeQuery = true)
     boolean existsOverlappingReservation(
-            @Param(value = "canchaId") short canchaId,
+            @Param(value = "canchaId") Integer canchaId,
             @Param(value = "startTime") LocalDateTime startTime,
             @Param(value = "endTime") LocalDateTime endTime);
 }

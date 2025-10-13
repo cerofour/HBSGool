@@ -26,7 +26,7 @@ public class ReservacionEntity {
 
     private Integer usuarioId;
 
-    private Short canchaId;
+    private Integer canchaId;
 
     private Short cajeroId;
 
