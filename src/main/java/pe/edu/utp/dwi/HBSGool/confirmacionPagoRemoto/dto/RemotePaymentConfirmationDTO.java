@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
+package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,5 +16,4 @@ public class RemotePaymentConfirmationDTO {
 	private Integer         paymentId;
 	private Integer         cashierId;
 	private LocalDateTime   date;
-	private String          paymentEvidence;
 }

@@ -2,8 +2,12 @@ package pe.edu.utp.dwi.HBSGool.cierrecajero;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pe.edu.utp.dwi.HBSGool.boveda.BovedaDto;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaEntity;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaRepositoy;
+import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
+import pe.edu.utp.dwi.HBSGool.cierrecajero.dto.LogoutCashierRequest;
+import pe.edu.utp.dwi.HBSGool.pago.PagoRepository;
 
 import java.util.Optional;
 
@@ -13,30 +17,35 @@ public class CierreCajeroService {
 
     private final CierreCajeroRepository cierreCajeroRepository;
 
-    private final BovedaRepositoy bovedaRepositoy;
+    private final BovedaService bovedaService;
 
-    public CierreCajeroDto logoutCashier(CierreCajeroDto cierreCajeroDto) {
+    private final PagoRepository pagoRepository;
+
+    public Optional<CierreCajeroEntity> getBySesionCashierId(int sesionCashierId) {
+        return cierreCajeroRepository.findBySesionCajeroId(sesionCashierId);
+    }
+
+    public CierreCajeroDto logoutCashier(LogoutCashierRequest logoutCashierRequest) {
 
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
-                .findBySesionCajeroId(cierreCajeroDto.getSesionCajeroId());
+                .findBySesionCajeroId(logoutCashierRequest.getSesionCajeroId());
 
         if(cierreCajero.isPresent()) throw new RuntimeException("Ya existe un cierre cajero para dicha sesion");
 
         CierreCajeroEntity entity = cierreCajeroRepository.save(
                 CierreCajeroEntity.builder()
-                        .sesionCajeroId(cierreCajeroDto.getSesionCajeroId())
-                        .fecha(cierreCajeroDto.getFecha())
-                        .montoTeorico(cierreCajeroDto.getMontoTeorico())
-                        .montoReal(cierreCajeroDto.getMontoReal())
+                        .sesionCajeroId(logoutCashierRequest.getSesionCajeroId())
+                        .fecha(logoutCashierRequest.getFecha())
+                        .montoTeorico(pagoRepository.getTotalCashPaymentsConfirmedByCashierSessionId(logoutCashierRequest.getSesionCajeroId()))
+                        .montoReal(logoutCashierRequest.getMontoReal())
                         .build()
         );
 
-        bovedaRepositoy.save(
-                BovedaEntity.builder()
-                        .sesionCajeroId(cierreCajeroDto.getSesionCajeroId())
+        bovedaService.processCashMovement(
+                BovedaDto.builder()
                         .tipoMovimientoBoveda("INGRESO")
                         .motivo("Cierre de caja")
-                        .saldo(cierreCajeroDto.getMontoReal())
+                        .monto(logoutCashierRequest.getMontoReal())
                         .build()
         );
 

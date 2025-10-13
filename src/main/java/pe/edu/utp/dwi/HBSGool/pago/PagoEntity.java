@@ -2,6 +2,7 @@ package pe.edu.utp.dwi.HBSGool.pago;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PagoEntity {
 
     @Id
@@ -30,4 +32,6 @@ public class PagoEntity {
     private String medioPago;
 
     private String estadoPago;
+
+    private String evidencia;
 }

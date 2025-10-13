@@ -48,7 +48,7 @@ CREATE TABLE Review (
 	usuarioId INT NOT NULL,
 	rating CHAR(1) NOT NULL,
 	comentario VARCHAR(255) NOT NULL,
-	creado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	creado TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario),
 	CONSTRAINT chkReviewRating CHECK (rating IN ('1', '2', '3', '4', '5'))
 
@@ -60,7 +60,7 @@ CREATE TABLE Reservacion (
 	usuarioId INT,
 	canchaId SMALLINT NOT NULL,
 	cajeroId SMALLINT,
-	tiempoInicio TIMESTAMP UNIQUE NOT NULL,
+	tiempoInicio TIMESTAMP WITHOUT TIME ZONE NOT NULL,
 	dni CHAR(8) NOT NULL,
 	duracion INTERVAL NOT NULL,
 	precioTotal NUMERIC(10, 2) NOT NULL,
@@ -70,7 +70,8 @@ CREATE TABLE Reservacion (
 	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero),
 	CONSTRAINT chkReservacionPrecioTotal CHECK (precioTotal >= 0),
 	CONSTRAINT chkReservacionDuracion CHECK (duracion >= INTERVAL '1 hour'),
-	CONSTRAINT chkReservacionDni CHECK (dni ~ '^\d{8}$')
+	CONSTRAINT chkReservacionDni CHECK (dni ~ '^\d{8}$'),
+	CONSTRAINT chkReservacionEstadoReservacion CHECK (estadoReservacion in ('POR CONFIRMAR', 'CONFIRMADA', 'SALDO', 'CANCELADA', 'FINALIZADA'))
 
 
 );
@@ -80,7 +81,7 @@ CREATE TABLE SesionCajero (
 	idSesionCajero INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
 	cajeroId SMALLINT NOT NULL,
 	montoInicial NUMERIC(6, 2) NOT NULL,
-	fechaApertura TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fechaApertura TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero),
 	CONSTRAINT chkSesionCajeroMontoInicial CHECK (montoInicial >= 0)
 
@@ -90,22 +91,24 @@ CREATE TABLE SesionCajero (
 CREATE TABLE Pago (
 	idPago INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
 	reservacionId INT NOT NULL,
-	sesionCajeroId INT NOT NULL,
+	sesionCajeroId INT,
 	cantidadDinero NUMERIC(6, 2) NOT NULL,
-	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fecha TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	medioPago VARCHAR(16) NOT NULL,
 	estadoPago VARCHAR(16) NOT NULL DEFAULT 'PENDIENTE',
+	evidencia VARCHAR(64),
 	FOREIGN KEY (reservacionId) REFERENCES Reservacion(idReservacion),
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
 	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0),
+    CONSTRAINT chkPagoMedioPago CHECK (medioPago in ('REMOTO', 'EFECTIVO')),
     CONSTRAINT chkPagoEstadoPago CHECK (estadoPago in ('PENDIENTE', 'RECHAZADO', 'CONFIRMADO'))
 );
 
 
 CREATE TABLE CierreCajero (
 	idCierreCajero INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-	sesionCajeroId INT NOT NULL,
-	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	sesionCajeroId INT NOT NULL UNIQUE,
+	fecha TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	montoTeorico NUMERIC(6, 2) NOT NULL,
 	montoReal NUMERIC(6, 2) NOT NULL,
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
@@ -119,8 +122,7 @@ CREATE TABLE ConfirmacionPagoRemoto (
 	idConfirmacionPagoRemoto INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
 	pagoId INT NOT NULL,
 	cajeroId INT NOT NULL,
-	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	evidencia VARCHAR NOT NULL,
+	fecha TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (pagoId) REFERENCES Pago(idPago),
 	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero)
 

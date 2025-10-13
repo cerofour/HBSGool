@@ -3,16 +3,29 @@ package pe.edu.utp.dwi.HBSGool.pago;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface PagoRepository extends JpaRepository<PagoEntity, Integer> {
 
+    @Query(value = """
+            SELECT COALESCE(SUM(cantidadDinero), 0)
+                    FROM pago
+                    WHERE estadoPago = 'CONFIRMADO'
+                      AND medioPago = 'EFECTIVO'
+                      AND sesionCajeroId = :sesionCajeroId
+            """, nativeQuery = true)
+    double getTotalCashPaymentsConfirmedByCashierSessionId(Integer sesionCajeroId);
+
     // Buscar por reservación
     Page<PagoEntity> findByReservacionId(Integer reservacionId, Pageable pageable);
+
+    List<PagoEntity> findByReservacionId(Integer reservacionId);
 
     // Buscar por sesión de cajero
     Page<PagoEntity> findBySesionCajeroId(Integer sesionCajeroId, Pageable pageable);

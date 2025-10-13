@@ -5,18 +5,37 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/sesion_cajero")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class SesionCajeroController {
 
     private final SesionCajeroService sesionCajeroService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    @GetMapping("/resumen")
+    public List<SesionCajeroResumenDTO> getSesionesCajero(
+            @RequestParam Short idCajero,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @PageableDefault(size = 10, sort="fechaApertura", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return sesionCajeroService.getCashierClosureSummary(idCajero, fechaInicio, fechaFin, pageable);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping
-    public ResponseEntity<Page<SesionCajeroDto>> getById(
+    public ResponseEntity<Page<SesionCajeroDto>> getByCashierId(
             @RequestParam(name = "cajeroId", required = false) Short cajeroId,
             @PageableDefault(size = 10, sort = "fechaApertura", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -26,16 +45,18 @@ public class SesionCajeroController {
         return ResponseEntity.ok(page);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SesionCajeroDto> getLastSesionByCajeroId(@PathVariable short id) {
-        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(id);
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    @GetMapping("/{cashierId}/ultima")
+    public ResponseEntity<SesionCajeroDto> getLastSesionByCajeroId(@PathVariable short cashierId) {
+        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(cashierId);
         if(sesionCajero == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(sesionCajero);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @PostMapping
-    public ResponseEntity<SesionCajeroDto> createCashierSession(@RequestBody SesionCajeroDto sesionCajeroDto) {
-        return ResponseEntity.ok(sesionCajeroService.createCashierSession(sesionCajeroDto));
+    public ResponseEntity<SesionCajeroDto> createCashierSession(@RequestBody CreateCashierSessionRequest createCashierSessionRequest) {
+        return ResponseEntity.ok(sesionCajeroService.createCashierSession(createCashierSessionRequest));
     }
 
 

@@ -20,9 +20,9 @@ public class SesionCajeroEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idSesionCajero;
 
-    private short cajeroId;
+    private Short cajeroId;
 
-    private double montoInicial;
+    private Double montoInicial;
 
     private LocalDateTime fechaApertura;
 

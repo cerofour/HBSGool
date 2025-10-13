@@ -15,8 +15,6 @@ public class SesionCajeroDto {
 
     private Integer idSesionCajero;
 
-    private short cajeroId;
-
     private double montoInicial;
 
     private LocalDateTime fechaApertura;

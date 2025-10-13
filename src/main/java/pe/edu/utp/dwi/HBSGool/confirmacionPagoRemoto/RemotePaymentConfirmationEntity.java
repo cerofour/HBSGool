@@ -29,7 +29,4 @@ public class RemotePaymentConfirmationEntity {
 
 	@Column(name = "fecha")
 	private LocalDateTime date;
-
-	@Column(name = "evidencia")
-	private String evidence;
 }

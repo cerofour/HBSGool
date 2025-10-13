@@ -14,7 +14,7 @@ public class CajeroEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idCajero")
-	private Integer cashierId;
+	private Short cashierId;
 
 	@Column(name = "usuarioId")
 	private Integer userId;
