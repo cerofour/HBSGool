@@ -92,14 +92,14 @@ public class PagoService {
         }
     }
 
-    public PagoEntity createPayment(Integer reservationId, Integer cashierSessionId, BigDecimal money, String paymentMethod, String evidence) {
+    public PagoEntity createPayment(Integer reservationId, Integer cashierSessionId, BigDecimal money, String paymentMethod, String evidence, String estadoPago) {
         PagoEntity entity = new PagoEntity(null,
                 reservationId,
                 cashierSessionId,
                 money,
                 LocalDateTime.now(),
                 paymentMethod,
-                "PENDIENTE",
+                estadoPago,
                 evidence);
 
         return repository.save(entity);

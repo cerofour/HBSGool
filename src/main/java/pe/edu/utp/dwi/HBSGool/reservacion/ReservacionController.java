@@ -72,9 +72,12 @@ public class ReservacionController {
     }
 
     @PreAuthorize("hasRole('CASHIER')")
-    @PostMapping("/cajero")
-    public ResponseEntity<CreateReservationAsCashierResult> createReservationAsCashier(@RequestBody CreateReservationAsCashierRequest request) {
-        return ResponseEntity.ok(null);
+    @PostMapping(value = "/cajero", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<CreateReservationAsCashierResult> createReservationAsCashier(
+            @RequestPart("data") CreateReservationAsCashierRequest request,
+            @RequestPart("evidencia") MultipartFile evidencia
+    ) {
+        return ResponseEntity.ok(service.createReservationAsCashier(request, evidencia));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")

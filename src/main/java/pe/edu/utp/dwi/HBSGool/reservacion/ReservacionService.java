@@ -7,16 +7,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.cancha.model.CanchaEntity;
 import pe.edu.utp.dwi.HBSGool.cancha.service.CanchaService;
-import pe.edu.utp.dwi.HBSGool.exception.CanchaNotFoundException;
-import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
-import pe.edu.utp.dwi.HBSGool.exception.ReservationOverlapException;
-import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
+import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
+import pe.edu.utp.dwi.HBSGool.exception.*;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
+import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierRequest;
+import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierResult;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserRequest;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserResult;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroDto;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroEntity;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
@@ -34,6 +40,9 @@ public class ReservacionService {
     private final AuthService authService;
     private final FileStorageService fileStorageService;
     private final PagoService pagoService;
+    private final CajeroService cajeroService;
+    private final SesionCajeroService sesionCajeroService;
+    private final CierreCajeroService cierreCajeroService;
 
     public Page<ReservacionDto> listReservaciones(
             Integer usuarioId,
@@ -65,6 +74,79 @@ public class ReservacionService {
 
     public ReservacionDto getById(Integer id) {
         return repository.findById(id).map(this::toDto).orElse(null);
+    }
+
+    @Transactional
+    public CreateReservationAsCashierResult createReservationAsCashier(CreateReservationAsCashierRequest request, MultipartFile evidencia) {
+
+        UsuarioEntity currentUser = authService.getCurrentUser()
+                .orElseThrow(() -> new UnauthenticatedException("No hay un usuario logueado actualmente."));
+
+        Optional<CajeroEntity> cajero = cajeroService.findByUserId(currentUser.getUserId());
+
+        if (cajero.isEmpty()) throw new UserIsNotCashierException("Este usuario no es un cajero");
+
+        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(cajero.get().getCashierId());
+
+        Optional<CierreCajeroEntity> cierreCajero = cierreCajeroService.getBySesionCashierId(sesionCajero.getIdSesionCajero());
+
+        if (cierreCajero.isPresent()) throw new SesionCajeroException("Este cajero no tiene sesion abierta.");
+
+        CanchaEntity selectedCancha = canchaService.findByCanchaId(request.canchaId())
+                .orElseThrow(() -> new CanchaNotFoundException(request.canchaId()));
+
+        Duration reservationDuration = stringToDuration(request.duracion());
+
+        double totalPrice = Math.round(
+                selectedCancha.getHourlyPrice() * (reservationDuration.toMinutes() / 60.0) * 100.0
+        ) / 100.0;
+
+        boolean existsOverlapping = repository.existsOverlappingReservation(
+                request.canchaId(),
+                request.tiempoInicio(),
+                request.tiempoInicio().plus(reservationDuration)
+        );
+
+        if (existsOverlapping)
+            throw new ReservationOverlapException("La cancha ya está reservada dentro de ese horario");
+
+        // Guardamos la reservación
+        ReservacionEntity reservation = ReservacionEntity.builder()
+                .usuarioId(null)
+                .canchaId(request.canchaId())
+                .cajeroId(cajero.get().getCashierId())
+                .tiempoInicio(request.tiempoInicio())
+                .dni(request.dni())
+                .duracion(reservationDuration)
+                .precioTotal(BigDecimal.valueOf(totalPrice))
+                .estadoReservacion("CONFIRMADO")
+                .build();
+
+        // Guardamos el archivo de evidencia
+        String evidencePath = null;
+        if (request.medioPago().equals("REMOTO"))
+            evidencePath = fileStorageService.saveEvidenceFile(evidencia, reservation.getIdReservacion());
+
+        repository.save(reservation);
+
+        PagoEntity payment = pagoService.createPayment(
+                reservation.getIdReservacion(),
+                sesionCajero.getIdSesionCajero(),
+                BigDecimal.valueOf(totalPrice),
+                request.medioPago(),
+                evidencePath,
+                "CONFIRMADO"
+        );
+
+        return new CreateReservationAsCashierResult(
+                reservation.getUsuarioId(),
+                reservation.getCanchaId(),
+                reservation.getDni(),
+                reservation.getTiempoInicio(),
+                reservation.getDuracion().toString(),
+                reservation.getPrecioTotal(),
+                reservation.getEstadoReservacion()
+        );
     }
 
     @Transactional
@@ -113,7 +195,8 @@ public class ReservacionService {
                 null,
 		        BigDecimal.valueOf(request.montoInicial()),
                 request.medioPago(),
-                evidencePath
+                evidencePath,
+                "PENDIENTE"
         );
 
         return new CreateReservationAsUserResult(

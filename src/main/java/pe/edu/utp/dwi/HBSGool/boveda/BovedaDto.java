@@ -12,8 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BovedaDto {
     private int idMovimientoBoveda;
-    private int sesionCajeroId;
     private String tipoMovimientoBoveda;
     private String motivo;
-    private double saldo;
+    private double monto;
 }
