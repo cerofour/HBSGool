@@ -90,11 +90,12 @@ CREATE TABLE SesionCajero (
 CREATE TABLE Pago (
 	idPago INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
 	reservacionId INT NOT NULL,
-	sesionCajeroId INT NOT NULL,
+	sesionCajeroId INT,
 	cantidadDinero NUMERIC(6, 2) NOT NULL,
 	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	medioPago VARCHAR(16) NOT NULL,
 	estadoPago VARCHAR(16) NOT NULL DEFAULT 'PENDIENTE',
+	evidencia VARCHAR(64),
 	FOREIGN KEY (reservacionId) REFERENCES Reservacion(idReservacion),
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
 	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0),
