@@ -8,6 +8,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/reservaciones")
 @RequiredArgsConstructor
@@ -42,4 +44,11 @@ public class ReservacionController {
 
         return ResponseEntity.ok(service.createReservation(reservacionDto));
     }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelReservation(@PathVariable("id") Integer id) {
+        service.cancelReservation(id);
+        return ResponseEntity.ok(null);
+    }
+
 }

@@ -5,8 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/sesion_cajero")
@@ -15,8 +19,18 @@ public class SesionCajeroController {
 
     private final SesionCajeroService sesionCajeroService;
 
+    @GetMapping("/resumen")
+    public List<SesionCajeroResumenDTO> getSesionesCajero(
+            @RequestParam Short idCajero,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @PageableDefault(size = 10, sort="fechaApertura", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return sesionCajeroService.getCashierClosureSummary(idCajero, fechaInicio, fechaFin, pageable);
+    }
+
     @GetMapping
-    public ResponseEntity<Page<SesionCajeroDto>> getById(
+    public ResponseEntity<Page<SesionCajeroDto>> getByCashierId(
             @RequestParam(name = "cajeroId", required = false) Short cajeroId,
             @PageableDefault(size = 10, sort = "fechaApertura", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -26,9 +40,9 @@ public class SesionCajeroController {
         return ResponseEntity.ok(page);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SesionCajeroDto> getLastSesionByCajeroId(@PathVariable short id) {
-        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(id);
+    @GetMapping("/{cashierId}/ultima")
+    public ResponseEntity<SesionCajeroDto> getLastSesionByCajeroId(@PathVariable short cashierId) {
+        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(cashierId);
         if(sesionCajero == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(sesionCajero);
     }
