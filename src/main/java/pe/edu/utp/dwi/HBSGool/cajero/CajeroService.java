@@ -13,7 +13,7 @@ public class CajeroService {
 
 	/// Retorna el cajero asociado al usuario con userId.
 	public Optional<CajeroEntity> findByUserId(Integer userId) {
-		CajeroEntity cashier = repo.findByUsuarioId(userId)
+		CajeroEntity cashier = repo.findByUserId(userId)
 				.orElseThrow(() -> new UserIsNotCashierException("Este usuario no es un cajero."));
 
 		return Optional.of(cashier);
