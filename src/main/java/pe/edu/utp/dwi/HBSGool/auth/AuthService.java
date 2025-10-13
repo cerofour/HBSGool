@@ -8,6 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pe.edu.utp.dwi.HBSGool.auth.dto.LoginRequestDTO;
+import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterRequestDTO;
+import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterUserResult;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioRepository;
 
@@ -43,7 +46,7 @@ public class AuthService {
 	/**
 	 * Registra un nuevo usuario.
 	 */
-	public Map<String, Object> register(RegisterRequestDTO req) {
+	public RegisterUserResult register(RegisterRequestDTO req) {
 		if (userRepo.findByEmail(req.email()).isPresent()) {
 			throw new IllegalArgumentException("Usuario ya existe");
 		}
@@ -60,7 +63,19 @@ public class AuthService {
 		u.setRol("ROLE_USER");
 
 		userRepo.save(u);
-		return Map.of("msg", "Usuario creado");
+
+		RegisterUserResult result = new RegisterUserResult(
+				true,
+				u.getUserId(),
+				u.getName(),
+				u.getFatherLastname(),
+				u.getMotherLastname(),
+				u.getDni(),
+				u.getCellphone(),
+				u.getEmail()
+		);
+
+		return result;
 	}
 
 	/**

@@ -2,15 +2,10 @@ package pe.edu.utp.dwi.HBSGool.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
-import pe.edu.utp.dwi.HBSGool.usuario.UsuarioRepository;
-
-import java.util.Map;
+import pe.edu.utp.dwi.HBSGool.auth.dto.LoginRequestDTO;
+import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterRequestDTO;
+import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterUserResult;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,12 +26,12 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity<?> register(@RequestBody RegisterRequestDTO req) {
+	public ResponseEntity<RegisterUserResult> register(@RequestBody RegisterRequestDTO req) {
 		try {
 			return ResponseEntity.ok(authService.register(req));
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(
-					java.util.Map.of("error", e.getMessage())
+					new RegisterUserResult(false, null, null, null, null, null)
 			);
 		}
 	}
