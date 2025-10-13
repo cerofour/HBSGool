@@ -27,6 +27,7 @@ public class PagoController {
 
     private final PagoService service;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping
     public ResponseEntity<Page<PagoDto>> list(
             @RequestParam(name = "reservacionId", required = false) Integer reservacionId,
@@ -38,6 +39,7 @@ public class PagoController {
         return ResponseEntity.ok(page);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/{id}")
     public ResponseEntity<PagoDto> getById(@PathVariable Integer id) {
         PagoDto dto = service.getById(id);
@@ -47,6 +49,7 @@ public class PagoController {
         return ResponseEntity.ok(dto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<PagoDto> cancelar(@PathVariable Integer id) {
         try {
@@ -71,6 +74,7 @@ public class PagoController {
         PagoDto pagoDto = service.crearPago(reservationId, cantidadDinero, medioPago, evidencia);
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoDto);
     }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/evidencia/{paymentId}")
     public ResponseEntity<Resource> getPaymentEvidence(@PathVariable Integer paymentId) throws IOException {

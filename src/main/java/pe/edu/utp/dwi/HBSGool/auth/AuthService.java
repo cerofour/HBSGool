@@ -60,7 +60,11 @@ public class AuthService {
 		u.setEmail(req.email());
 		u.setActive(true);
 		u.setPassword(passwordEncoder.encode(req.password()));
-		u.setRol("ROLE_USER");
+
+		if (req.role() == null)
+			u.setRol("ROLE_USER");
+		else
+			u.setRol(req.role());
 
 		userRepo.save(u);
 

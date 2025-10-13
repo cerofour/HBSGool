@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +18,7 @@ public class ReviewController {
 
     private final ReviewService service;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<ReviewDto>> list(
             @RequestParam(name = "usuarioId", required = false) Integer usuarioId,
@@ -26,6 +28,7 @@ public class ReviewController {
         return ResponseEntity.ok(page);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ReviewDto> getById(@PathVariable Integer id) {
         ReviewDto dto = service.getById(id);
@@ -35,6 +38,7 @@ public class ReviewController {
         return ResponseEntity.ok(dto);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody CreateReviewDto createDto) {
         ReviewDto created = service.createReview(createDto);

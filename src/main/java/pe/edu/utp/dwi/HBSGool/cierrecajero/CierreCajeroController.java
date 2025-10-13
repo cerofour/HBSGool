@@ -2,6 +2,7 @@ package pe.edu.utp.dwi.HBSGool.cierrecajero;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.dto.LogoutCashierRequest;
 
@@ -12,6 +13,7 @@ public class CierreCajeroController {
 
     private final CierreCajeroService cierreCajeroService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @PostMapping
     public ResponseEntity<CierreCajeroDto> logoutCashier(@RequestBody LogoutCashierRequest logoutCashierRequest) {
 

@@ -71,7 +71,7 @@ public class ReservacionController {
         return ResponseEntity.ok(service.createReservationAsUser(createReservationAsUserRequest, evidencia));
     }
 
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @PostMapping(value = "/cajero", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<CreateReservationAsCashierResult> createReservationAsCashier(
             @RequestPart("data") CreateReservationAsCashierRequest request,

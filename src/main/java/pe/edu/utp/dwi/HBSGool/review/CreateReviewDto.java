@@ -13,11 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateReviewDto {
-    
-    @NotNull(message = "El usuarioId es obligatorio")
-    @Min(value = 1, message = "El usuarioId debe ser mayor a 0")
-    private Integer usuarioId;
-    
     @NotBlank(message = "El rating es obligatorio")
     @Pattern(regexp = "[1-5]", message = "El rating debe ser entre 1 y 5")
     private String rating;

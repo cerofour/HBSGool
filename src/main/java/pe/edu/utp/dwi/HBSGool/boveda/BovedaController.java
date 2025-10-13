@@ -12,7 +12,7 @@ public class BovedaController {
 
     private final BovedaService bovedaService;
 
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<BovedaDto> extractMoney(@RequestBody BovedaDto bovedaDto) {
         return ResponseEntity.ok(bovedaService.processCashMovement(bovedaDto));

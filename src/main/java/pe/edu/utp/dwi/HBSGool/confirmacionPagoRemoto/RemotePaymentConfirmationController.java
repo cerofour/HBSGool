@@ -20,7 +20,7 @@ public class RemotePaymentConfirmationController {
 
 	@GetMapping
 	@Operation(summary = "Listar confirmaciones de pago remoto con filtros opcionales")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN', 'CASHIER')")
 	public List<RemotePaymentConfirmationDTO> getAll(
 			@Parameter(description = "ID del cajero (opcional)")
 			@RequestParam(required = false) Integer cashierId,

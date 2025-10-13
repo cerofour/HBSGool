@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import pe.edu.utp.dwi.HBSGool.auth.AuthService;
+import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 public class ReviewService {
 
     private final ReviewRepository repository;
+    private final AuthService authService;
 
     public Page<ReviewDto> listReviews(Integer usuarioId, Pageable pageable) {
         Page<ReviewEntity> page;
@@ -28,8 +31,12 @@ public class ReviewService {
     }
 
     public ReviewDto createReview(CreateReviewDto createDto) {
+
+        UsuarioEntity currentUser = authService.getCurrentUser()
+                .orElseThrow();
+
         ReviewEntity entity = new ReviewEntity();
-        entity.setUsuarioId(createDto.getUsuarioId());
+        entity.setUsuarioId(currentUser.getUserId());
         entity.setRating(createDto.getRating());
         entity.setComentario(createDto.getComentario());
         entity.setCreado(LocalDateTime.now());

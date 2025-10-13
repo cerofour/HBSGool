@@ -1,6 +1,7 @@
 package pe.edu.utp.dwi.HBSGool.cancha.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +21,7 @@ public class CanchaController {
 		return canchaService.findAll();
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@org.springframework.web.bind.annotation.PatchMapping("/{id}")
 	public CanchaEntity patchCancha(
 			@org.springframework.web.bind.annotation.PathVariable("id") Integer id,

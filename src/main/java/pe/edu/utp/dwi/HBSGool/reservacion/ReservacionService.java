@@ -119,7 +119,7 @@ public class ReservacionService {
                 .dni(request.dni())
                 .duracion(reservationDuration)
                 .precioTotal(BigDecimal.valueOf(totalPrice))
-                .estadoReservacion("CONFIRMADO")
+                .estadoReservacion("CONFIRMADA")
                 .build();
 
         // Guardamos el archivo de evidencia
