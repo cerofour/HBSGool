@@ -1,5 +1,6 @@
 package pe.edu.utp.dwi.HBSGool.pago;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -8,9 +9,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
+import pe.edu.utp.dwi.HBSGool.exception.InvalidMoneyAmountException;
 import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
-import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionService;
+import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionRepository;
+import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,7 +32,9 @@ import java.util.Optional;
 public class PagoService {
 
     private final PagoRepository repository;
-    private final ReservacionService reservationService;
+    private final ReservacionRepository reservacionRepository;
+    private final FileStorageService fileStorageService;
+    private final CajeroService cashierService;
 
     public Page<PagoDto> listPagos(
             Integer reservacionId,
@@ -112,7 +120,7 @@ public class PagoService {
             throw new IllegalStateException("El pago ya está cancelado");
         }
         
-        pago.setEstadoPago("Cancelado");
+        pago.setEstadoPago("RECHAZADO");
         PagoEntity saved = repository.save(pago);
         return toDto(saved);
     }
@@ -125,7 +133,8 @@ public class PagoService {
                 e.getCantidadDinero(),
                 e.getFecha(),
                 e.getMedioPago(),
-                e.getEstadoPago()
+                e.getEstadoPago(),
+                e.getEvidencia()
         );
     }
 
@@ -150,8 +159,59 @@ public class PagoService {
         for (PagoEntity p : allOtherPayments)
             totalPaid = totalPaid.add(p.getCantidadDinero());
 
-        if (totalPaid.equals(reservation.getPrecioTotal())) {
-            reservationService.markAsConfirmed(reservation);
+        BigDecimal saldo = reservation.getPrecioTotal().subtract(totalPaid);
+
+        int cmp = totalPaid.compareTo(reservation.getPrecioTotal());
+
+        if (cmp > 0) {
+            throw new InvalidMoneyAmountException(String.format("No se puede pagar más que el precio total: Precio Total (%f), Saldo: (%f)", reservation.getPrecioTotal(), saldo));
+        } if (cmp < 0) {
+            reservation.setEstadoReservacion("SALDO");
+            reservacionRepository.save(reservation);
+        } else {
+            reservation.setEstadoReservacion("CONFIRMADA");
+            reservacionRepository.save(reservation);
         }
+    }
+
+    @Transactional(rollbackOn = InvalidMoneyAmountException.class)
+    public PagoDto crearPago(Integer reservationId, BigDecimal cantidadDinero, String medioPago, MultipartFile evidence) throws IOException {
+
+        CajeroEntity currentCashier = cashierService.getCurrentCashier()
+                .orElseThrow();
+
+        ReservacionEntity reservation = reservacionRepository.findById(reservationId)
+                .orElseThrow(() -> new ReservationNotFoundException("No se encontró la reservación con ID: " + reservationId));
+
+        String evidenciaPath = null;
+
+        if (evidence != null && !evidence.isEmpty()) {
+            evidenciaPath = fileStorageService.saveEvidenceFile(evidence, reservationId);
+        }
+
+        PagoEntity pago = PagoEntity.builder()
+                .reservacionId(reservation.getIdReservacion())
+                .sesionCajeroId(null) // si en el futuro se agrega sesión de cajero
+                .cantidadDinero(cantidadDinero)
+                .fecha(LocalDateTime.now())
+                .medioPago(medioPago)
+                .estadoPago("PENDIENTE")
+                .evidencia(evidenciaPath)
+                .build();
+
+        repository.save(pago);
+
+        verifyIfPaymentsAreCompleted(reservation);
+
+        return new PagoDto(
+                pago.getIdPago(),
+                pago.getReservacionId(),
+                Integer.valueOf(currentCashier.getCashierId()),
+                pago.getCantidadDinero(),
+                pago.getFecha(),
+                pago.getMedioPago(),
+                pago.getEstadoPago(),
+                pago.getEvidencia()
+        );
     }
 }

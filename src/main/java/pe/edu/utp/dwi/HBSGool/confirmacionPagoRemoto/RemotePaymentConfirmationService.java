@@ -1,5 +1,6 @@
 package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;

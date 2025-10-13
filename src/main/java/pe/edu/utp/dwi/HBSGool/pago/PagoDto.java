@@ -19,4 +19,5 @@ public class PagoDto {
     private LocalDateTime fecha;
     private String medioPago;
     private String estadoPago;
+    private String evidencia;
 }
