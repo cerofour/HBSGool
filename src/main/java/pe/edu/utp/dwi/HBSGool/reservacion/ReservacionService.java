@@ -23,6 +23,7 @@ import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +57,10 @@ public class ReservacionService {
         }
 
         return page.map(this::toDto);
+    }
+
+    public Optional<ReservacionEntity> findById(Integer reservationId) {
+        return repository.findById(reservationId);
     }
 
     public ReservacionDto getById(Integer id) {
@@ -184,5 +189,11 @@ public class ReservacionService {
                 .orElseThrow(() -> new UnauthenticatedException("No hay un usuario autenticado en este momento."));
 
         return repository.findByUsuarioId(currentUser.getUserId(), pageable).map(this::toDto);
+    }
+
+    public void markAsConfirmed(ReservacionEntity reservation) {
+        reservation.setEstadoReservacion("CONFIRMADA");
+
+        repository.save(reservation);
     }
 }

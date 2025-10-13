@@ -5,13 +5,15 @@ import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
-import pe.edu.utp.dwi.HBSGool.exception.NoCashierLoggedInException;
-import pe.edu.utp.dwi.HBSGool.exception.PaymentDoesntExistsException;
-import pe.edu.utp.dwi.HBSGool.exception.PaymentMethodMustBeRemote;
+import pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto.RemotePaymentConfirmationDTO;
+import pe.edu.utp.dwi.HBSGool.exception.*;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
+import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
+import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class RemotePaymentConfirmationService {
 	private final AuthService authService;
 	private final CajeroService cashierService;
 	private final PagoService pagoService;
+	private final ReservacionService reservationService;
 
 	public List<RemotePaymentConfirmationDTO> findAll(
 			Integer cashierId,
@@ -65,6 +68,12 @@ public class RemotePaymentConfirmationService {
 		PagoEntity payment = pagoService.findById(paymentId)
 				.orElseThrow(() -> new PaymentDoesntExistsException(paymentId));
 
+		ReservacionEntity reservation = reservationService.findById(payment.getReservacionId())
+				.orElseThrow(() -> new UsernameNotFoundException("No se encontró esta reservación."));
+
+		if (reservation.getEstadoReservacion().equals("FINALIZADA"))
+			throw new PaymentAlreadyCompletedException();
+
 		// método de pago debe ser diferente a EFECTIVO, ya que este es un pago remoto.
 		if (payment.getMedioPago().equals("EFECTIVO")) {
 			throw new PaymentMethodMustBeRemote();
@@ -73,9 +82,10 @@ public class RemotePaymentConfirmationService {
 		RemotePaymentConfirmationEntity entity = new RemotePaymentConfirmationEntity(
 				null,payment.getIdPago(), Integer.valueOf(cashier.getCashierId()), LocalDateTime.now());
 
-		pagoService.markAsConfirmed(payment);
-
 		repository.save(entity);
+
+		pagoService.markAsConfirmed(payment);
+		pagoService.verifyIfPaymentsAreCompleted(reservation);
 	}
 
 	private RemotePaymentConfirmationDTO toDTO(RemotePaymentConfirmationEntity x) {

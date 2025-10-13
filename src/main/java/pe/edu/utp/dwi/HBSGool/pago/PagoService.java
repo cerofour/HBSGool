@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
+import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
+import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class PagoService {
 
     private final PagoRepository repository;
+    private final ReservacionService reservationService;
 
     public Page<PagoDto> listPagos(
             Integer reservacionId,
@@ -132,5 +136,22 @@ public class PagoService {
     public void markAsConfirmed(PagoEntity payment) {
         payment.setEstadoPago("CONFIRMADO");
         repository.save(payment);
+    }
+
+    public List<PagoEntity> findByReservationId(Integer reservationId) {
+        return repository.findByReservacionId(reservationId);
+    }
+
+    public void verifyIfPaymentsAreCompleted(ReservacionEntity reservation) {
+        List<PagoEntity> allOtherPayments = repository.findByReservacionId(reservation.getIdReservacion());
+
+        BigDecimal totalPaid = BigDecimal.valueOf(0.0);
+
+        for (PagoEntity p : allOtherPayments)
+            totalPaid = totalPaid.add(p.getCantidadDinero());
+
+        if (totalPaid.equals(reservation.getPrecioTotal())) {
+            reservationService.markAsConfirmed(reservation);
+        }
     }
 }

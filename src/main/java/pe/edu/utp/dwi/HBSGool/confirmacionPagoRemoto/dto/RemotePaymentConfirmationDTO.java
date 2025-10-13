@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
+package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
