@@ -22,7 +22,7 @@ public class ReservacionController {
 
     private final ReservacionService service;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping
     public ResponseEntity<Page<ReservacionDto>> list(
             @RequestParam(name = "usuarioId", required = false) Integer usuarioId,

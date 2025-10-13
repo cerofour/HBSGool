@@ -98,10 +98,10 @@ public class ReservacionService {
                 .estadoReservacion("POR CONFIRMAR")
                 .build();
 
+        repository.save(reservation);
+
         // Guardamos el archivo de evidencia
         String evidencePath = fileStorageService.saveEvidenceFile(evidencia, reservation.getIdReservacion());
-
-        repository.save(reservation);
 
         PagoEntity payment = pagoService.createPayment(
                 reservation.getIdReservacion(),

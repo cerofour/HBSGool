@@ -3,6 +3,7 @@ package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
+import pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto.ConfirmPaymentRequest;
 import pe.edu.utp.dwi.HBSGool.exception.NoCashierLoggedInException;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
