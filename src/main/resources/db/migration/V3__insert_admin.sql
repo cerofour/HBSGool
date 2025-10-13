@@ -1,0 +1,2 @@
+INSERT INTO Usuario (nombre, apellidoPaterno, apellidoMaterno, dni, telefono, email, activo, contrasena)
+    VALUES ('ADMIN', 'HBS', 'GOOL', '00000000', '999999999', 'admin@hbsgool.com', True, '$2a$10$DTaFQa/Eh2mBZluE2qz/WecZ3aOQzvFPH1cHjuvnwz53rtiCx/fFe');
