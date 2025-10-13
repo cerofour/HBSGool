@@ -6,12 +6,11 @@ import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterRequestDTO;
 import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterUserResult;
 import pe.edu.utp.dwi.HBSGool.cajero.dto.RegisterCashierResult;
-import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
-import pe.edu.utp.dwi.HBSGool.exception.UserIsNotCashierException;
+import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 import java.util.Optional;
-import java.util.OptionalInt;
 
 @Service
 @RequiredArgsConstructor

@@ -1,20 +1,22 @@
 package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto.RemotePaymentConfirmationDTO;
-import pe.edu.utp.dwi.HBSGool.exception.*;
+import pe.edu.utp.dwi.HBSGool.exception.auth.NoCashierLoggedInException;
+import pe.edu.utp.dwi.HBSGool.exception.business.PaymentAlreadyCompletedException;
+import pe.edu.utp.dwi.HBSGool.exception.business.PaymentMethodMustBeRemote;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.PaymentDoesntExistsException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.UsernameNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 

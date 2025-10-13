@@ -10,6 +10,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import pe.edu.utp.dwi.HBSGool.exception.auth.NoCashierLoggedInException;
+import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.exception.business.*;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -60,7 +64,8 @@ public class GlobalExceptionHandler {
             CashierNotFoundException.class,
             ReservationNotFoundException.class,
             UsernameNotFoundException.class,
-            CanchaNotFoundException.class
+            CanchaNotFoundException.class,
+            PaymentDoesntExistsException.class
     })
     public ResponseEntity<ApiError> handleNotFound(RuntimeException ex) {
         var error = new ApiError(ex.getMessage(), 404, LocalDateTime.now());
@@ -70,7 +75,13 @@ public class GlobalExceptionHandler {
     // 📌 4️⃣ Regla de negocio o conflicto (400)
     @ExceptionHandler({
             ReservationOverlapException.class,
+            InvalidMoneyAmountException.class,
+            InvalidImageException.class,
+            InvalidImageFormatException.class,
             SesionCajeroException.class,
+            PaymentAlreadyCompletedException.class,
+            PaymentMethodMustBeRemote.class,
+            BovedaException.class,
             UserIsNotCashierException.class
     })
     public ResponseEntity<ApiError> handleBusinessErrors(RuntimeException ex) {
@@ -91,7 +102,7 @@ public class GlobalExceptionHandler {
     // 📌 6️⃣ Cualquier otro error no controlado (500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex) {
-        var error = new ApiError("Error inesperado: " + ex.getMessage(), 500, LocalDateTime.now());
+        var error = new ApiError("(ERROR NO MANEJADO) Error inesperado: " + ex.getMessage(), 500, LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

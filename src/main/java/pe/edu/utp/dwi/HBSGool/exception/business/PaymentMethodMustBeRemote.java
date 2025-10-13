@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.exception;
+package pe.edu.utp.dwi.HBSGool.exception.business;
 
 public class PaymentMethodMustBeRemote extends RuntimeException {
 	public PaymentMethodMustBeRemote() {
