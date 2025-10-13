@@ -60,22 +60,6 @@ public class PagoController {
     @PreAuthorize("hasAnyRoles('ADMIN', 'CASHIER')")
     @GetMapping("/evidencia/{paymentId}")
     public ResponseEntity<Resource> getPaymentEvidence(@PathVariable Integer paymentId) throws IOException {
-        PagoEntity pago = pagoRepository.findById(paymentId)
-                .orElseThrow(() -> new ReservationNotFoundException("Pago no encontrado con ID: " + paymentId));
-
-        if (pago.getEvidencia() == null) {
-            throw new RuntimeException("No hay evidencia disponible para este pago.");
-        }
-
-        Path path = Paths.get(pago.getEvidencia());
-        Resource resource = new UrlResource(path.toUri());
-
-        if (!resource.exists()) {
-            throw new RuntimeException("Archivo de evidencia no encontrado.");
-        }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // o detecta tipo MIME dinámicamente
-                .body(resource);
+        return service.getPaymentEvidence(paymentId);
     }
 }
