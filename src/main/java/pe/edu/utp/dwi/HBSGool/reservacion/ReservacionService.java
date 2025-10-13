@@ -4,9 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import pe.edu.utp.dwi.HBSGool.auth.AuthService;
+import pe.edu.utp.dwi.HBSGool.cancha.model.CanchaEntity;
+import pe.edu.utp.dwi.HBSGool.cancha.service.CanchaService;
+import pe.edu.utp.dwi.HBSGool.exception.CanchaNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.ReservationOverlapException;
+import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserRequest;
+import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserResult;
+import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 
 @Service
@@ -14,10 +23,12 @@ import java.time.Duration;
 public class ReservacionService {
 
     private final ReservacionRepository repository;
+    private final CanchaService canchaService;
+    private final AuthService authService;
 
     public Page<ReservacionDto> listReservaciones(
             Integer usuarioId,
-            Short canchaId,
+            Integer canchaId,
             String estado,
             String dni,
             Pageable pageable
@@ -43,28 +54,53 @@ public class ReservacionService {
         return repository.findById(id).map(this::toDto).orElse(null);
     }
 
-    public ReservacionDto createReservation(ReservacionDto dto) {
+    public CreateReservationAsUserResult createReservationAsUser(CreateReservationAsUserRequest request) {
 
+        UsuarioEntity currentUser = authService.getCurrentUser()
+                .orElseThrow(() -> new UnauthenticatedException("No hay un usuario logueado actualmente."));
+
+        CanchaEntity selectedCancha = canchaService.findByCanchaId(request.canchaId())
+                .orElseThrow(() -> new CanchaNotFoundException(request.canchaId()));
+
+        Duration reservationDuration = stringToDuration(request.duracion());
+
+        // calcula el precio total de la reservación.
+        double totalPrice = Math.round(
+                        selectedCancha.getHourlyPrice() *
+                        (reservationDuration.toMinutes() / 60.0) *
+                        100.0)
+                    / 100.0;
+        
         boolean existsOverlapping = repository.existsOverlappingReservation(
-                dto.getCanchaId(),
-                dto.getTiempoInicio(),
-                dto.getTiempoInicio().plus(stringToDuration(dto.getDuracion()))
+                request.canchaId(),
+                request.tiempoInicio(),
+                request.tiempoInicio().plus(reservationDuration)
         );
 
         if(existsOverlapping) throw new ReservationOverlapException("La cancha ya está reservada dentro de ese horario");
 
         ReservacionEntity reservation = ReservacionEntity.builder()
-                .usuarioId(dto.getUsuarioId())
-                .canchaId(dto.getCanchaId())
-                .cajeroId(dto.getCajeroId())
-                .tiempoInicio(dto.getTiempoInicio())
-                .dni(dto.getDni())
-                .duracion(stringToDuration(dto.getDuracion()))
-                .precioTotal(dto.getPrecioTotal())
-                .estadoReservacion(dto.getEstadoReservacion())
+                .usuarioId(currentUser.getUserId())
+                .canchaId(request.canchaId())
+                .cajeroId(null)
+                .tiempoInicio(request.tiempoInicio())
+                .dni(request.dni())
+                .duracion(stringToDuration(request.duracion()))
+                .precioTotal(BigDecimal.valueOf(totalPrice))
+                .estadoReservacion("POR CONFIRMAR")
                 .build();
 
-        return toDto(repository.save(reservation));
+        repository.save(reservation);
+
+        return new CreateReservationAsUserResult(
+                reservation.getUsuarioId(),
+                reservation.getCanchaId(),
+                reservation.getDni(),
+                reservation.getTiempoInicio(),
+                reservation.getDuracion().toString(),
+                reservation.getPrecioTotal(),
+                reservation.getEstadoReservacion()
+        );
     }
 
     public void cancelReservation(Integer reservationId) {

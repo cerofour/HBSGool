@@ -43,7 +43,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             CashierNotFoundException.class,
             ReservationNotFoundException.class,
-            UsernameNotFoundException.class
+            UsernameNotFoundException.class,
+            CanchaNotFoundException.class
     })
     public ResponseEntity<ApiError> handleNotFound(RuntimeException ex) {
         var error = new ApiError(ex.getMessage(), 404, LocalDateTime.now());
