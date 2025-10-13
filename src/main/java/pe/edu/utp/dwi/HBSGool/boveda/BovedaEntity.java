@@ -23,5 +23,5 @@ public class BovedaEntity {
 
     private String motivo;
 
-    private double saldo;
+    private double monto;
 }

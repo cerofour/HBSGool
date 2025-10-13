@@ -33,6 +33,8 @@ public class CajeroService {
 		if (registerUserResult.exito()) {
 			CajeroEntity entity = new CajeroEntity(null, registerUserResult.usuarioId(), true);
 
+			repo.save(entity);
+
 			return new RegisterCashierResult(true,
 					entity.getCashierId(),
 					entity.getUserId(),

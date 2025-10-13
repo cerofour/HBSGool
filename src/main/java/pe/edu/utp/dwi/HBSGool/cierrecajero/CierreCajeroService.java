@@ -36,7 +36,7 @@ public class CierreCajeroService {
                         .sesionCajeroId(cierreCajeroDto.getSesionCajeroId())
                         .tipoMovimientoBoveda("INGRESO")
                         .motivo("Cierre de caja")
-                        .saldo(cierreCajeroDto.getMontoReal())
+                        .monto(cierreCajeroDto.getMontoReal())
                         .build()
         );
 

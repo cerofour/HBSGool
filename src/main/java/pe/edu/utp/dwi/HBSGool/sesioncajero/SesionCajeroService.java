@@ -13,6 +13,7 @@ import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
 import pe.edu.utp.dwi.HBSGool.exception.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.SesionCajeroException;
 import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class SesionCajeroService {
 
     private final CajeroService cajeroService;
 
-    public SesionCajeroDto createCashierSession(SesionCajeroDto sesionCajeroDto) {
+    public SesionCajeroDto createCashierSession(CreateCashierSessionRequest createCashierSessionRequest) {
 
         Integer currentUserId = authService.getCurrentUser()
                 .orElseThrow(() -> new UnauthenticatedException("No hay ningún usuario autenticado en este momento."))
@@ -46,23 +47,23 @@ public class SesionCajeroService {
         Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository
                 .findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cashierId);
 
-        if (sesionCajero.isEmpty()) return createSesion(sesionCajeroDto, cashierId);
+        if (sesionCajero.isEmpty()) return createSesion(createCashierSessionRequest, cashierId);
 
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
                 .findBySesionCajeroId(sesionCajero.get().getIdSesionCajero());
 
         if (cierreCajero.isEmpty()) throw new SesionCajeroException("Existe una sesión que está abierta");
 
-        return createSesion(sesionCajeroDto, cashierId);
+        return createSesion(createCashierSessionRequest, cashierId);
 
     }
 
-    private SesionCajeroDto createSesion(SesionCajeroDto sesionCajeroDto, Short cashierId) {
+    private SesionCajeroDto createSesion(CreateCashierSessionRequest createCashierSessionRequest, Short cashierId) {
         SesionCajeroEntity entity = sesionCajeroRepository.save(
                 SesionCajeroEntity.builder()
                         .cajeroId(cashierId)
-                        .montoInicial(sesionCajeroDto.getMontoInicial())
-                        .fechaApertura(sesionCajeroDto.getFechaApertura())
+                        .montoInicial(createCashierSessionRequest.initialMoney())
+                        .fechaApertura(LocalDateTime.now())
                         .build()
         );
 
@@ -71,7 +72,7 @@ public class SesionCajeroService {
                         .sesionCajeroId(entity.getIdSesionCajero())
                         .tipoMovimientoBoveda("RETIRO")
                         .motivo("Apertura de caja")
-                        .saldo(entity.getMontoInicial()*-1)
+                        .monto(entity.getMontoInicial()*-1)
                         .build()
         );
 

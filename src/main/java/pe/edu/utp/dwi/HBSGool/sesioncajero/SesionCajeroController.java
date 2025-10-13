@@ -7,13 +7,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/sesion_cajero")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class SesionCajeroController {
 
@@ -48,8 +51,8 @@ public class SesionCajeroController {
     }
 
     @PostMapping
-    public ResponseEntity<SesionCajeroDto> createCashierSession(@RequestBody SesionCajeroDto sesionCajeroDto) {
-        return ResponseEntity.ok(sesionCajeroService.createCashierSession(sesionCajeroDto));
+    public ResponseEntity<SesionCajeroDto> createCashierSession(@RequestBody CreateCashierSessionRequest createCashierSessionRequest) {
+        return ResponseEntity.ok(sesionCajeroService.createCashierSession(createCashierSessionRequest));
     }
 
 
