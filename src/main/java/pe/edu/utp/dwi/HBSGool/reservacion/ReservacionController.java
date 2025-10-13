@@ -22,7 +22,16 @@ public class ReservacionController {
 
     private final ReservacionService service;
 
-    // @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/usuario")
+    public ResponseEntity<Page<ReservacionDto>> getReservations(
+            @PageableDefault(size = 10, sort = "tiempoInicio", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<ReservacionDto> page = service.listCurrentUserReservations(pageable);
+        return ResponseEntity.ok(page);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping
     public ResponseEntity<Page<ReservacionDto>> list(
             @RequestParam(name = "usuarioId", required = false) Integer usuarioId,

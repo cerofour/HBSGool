@@ -177,4 +177,12 @@ public class ReservacionService {
             return minutes + " minute" + (minutes > 1 ? "s" : "");
         }
     }
+
+    public Page<ReservacionDto> listCurrentUserReservations(Pageable pageable) {
+
+        UsuarioEntity currentUser = authService.getCurrentUser()
+                .orElseThrow(() -> new UnauthenticatedException("No hay un usuario autenticado en este momento."));
+
+        return repository.findByUsuarioId(currentUser.getUserId(), pageable).map(this::toDto);
+    }
 }

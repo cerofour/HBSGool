@@ -71,6 +71,7 @@ CREATE TABLE Reservacion (
 	CONSTRAINT chkReservacionPrecioTotal CHECK (precioTotal >= 0),
 	CONSTRAINT chkReservacionDuracion CHECK (duracion >= INTERVAL '1 hour'),
 	CONSTRAINT chkReservacionDni CHECK (dni ~ '^\d{8}$')
+	CONSTRAINT chkReservacionEstadoReservacion CHECK (estadoReservacion in ('POR CONFIRMAR', 'CONFIRMADA', 'CANCELADA', 'FINALIZADA'))
 
 
 );
@@ -99,6 +100,7 @@ CREATE TABLE Pago (
 	FOREIGN KEY (reservacionId) REFERENCES Reservacion(idReservacion),
 	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero),
 	CONSTRAINT chkPagoCantidadDinero CHECK (cantidadDinero >= 0),
+    CONSTRAINT chkPagoMedioPago CHECK (estadoPago in ('REMOTO', 'EFECTIVO'))
     CONSTRAINT chkPagoEstadoPago CHECK (estadoPago in ('PENDIENTE', 'RECHAZADO', 'CONFIRMADO'))
 );
 
