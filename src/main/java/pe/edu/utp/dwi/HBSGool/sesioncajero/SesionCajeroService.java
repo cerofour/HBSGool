@@ -8,9 +8,11 @@ import pe.edu.utp.dwi.HBSGool.boveda.BovedaEntity;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaRepositoy;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
+import pe.edu.utp.dwi.HBSGool.exception.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.SesionCajeroException;
-import pe.edu.utp.dwi.HBSGool.review.ReviewEntity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +79,32 @@ public class SesionCajeroService {
 
     }
 
+    private Page<SesionCajeroEntity> findFilteredSesions(
+            Short idCajero,
+            LocalDateTime fechaInicio,
+            LocalDateTime fechaFin,
+            Pageable pageable) {
+
+        if (idCajero != null && fechaInicio != null && fechaFin != null) {
+            return sesionCajeroRepository.findByCajeroIdAndFechaAperturaBetween(idCajero, fechaInicio, fechaFin, pageable);
+        } else if (idCajero != null && fechaInicio != null) {
+            return sesionCajeroRepository.findByCajeroIdAndFechaAperturaAfter(idCajero, fechaInicio, pageable);
+        } else if (idCajero != null && fechaFin != null) {
+            return sesionCajeroRepository.findByCajeroIdAndFechaAperturaBefore(idCajero, fechaFin, pageable);
+        } else if (idCajero != null) {
+            return sesionCajeroRepository.findByCajeroId(idCajero, pageable);
+        } else if (fechaInicio != null && fechaFin != null) {
+            return sesionCajeroRepository.findByFechaAperturaBetween(fechaInicio, fechaFin, pageable);
+        } else if (fechaInicio != null) {
+            return sesionCajeroRepository.findByFechaAperturaAfter(fechaInicio, pageable);
+        } else if (fechaFin != null) {
+            return sesionCajeroRepository.findByFechaAperturaBefore(fechaFin, pageable);
+        } else {
+            return sesionCajeroRepository.findAll(pageable);
+        }
+    }
+
+
     public Page<SesionCajeroDto> getAll(Pageable pageable) {
         Page<SesionCajeroEntity> page = sesionCajeroRepository.findAll(pageable);
         return page.map(this::toDto);
@@ -94,6 +122,28 @@ public class SesionCajeroService {
                 .montoInicial(e.getMontoInicial())
                 .fechaApertura(e.getFechaApertura())
                 .build();
+    }
+
+    public List<SesionCajeroResumenDTO> getCashierClosureSummary(Short idCajero, LocalDateTime fechaInicio, LocalDateTime fechaFin, Pageable pageable) {
+        Page<SesionCajeroEntity> sesiones = findFilteredSesions(idCajero, fechaInicio, fechaFin, pageable);
+
+        List<SesionCajeroResumenDTO> resumen = new ArrayList<>();
+        for (SesionCajeroEntity sesion : sesiones) {
+            CierreCajeroEntity cierre = cierreCajeroRepository.findBySesionCajeroId(sesion.getIdSesionCajero())
+                    .orElseThrow(() -> new CashierNotFoundException("Cajero con esta ID no encontrado."));
+            if (cierre != null) {
+                resumen.add(new SesionCajeroResumenDTO(
+                        sesion.getIdSesionCajero(),
+                        sesion.getCajeroId(),
+                        sesion.getFechaApertura(),
+                        cierre.getFecha(),
+                        cierre.getMontoTeorico(),
+                        cierre.getMontoReal(),
+                        cierre.getMontoReal() - cierre.getMontoTeorico()
+                ));
+            }
+        }
+        return resumen;
     }
 
 }

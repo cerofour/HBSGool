@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.ReservationOverlapException;
 
 import java.time.Duration;
@@ -64,6 +65,13 @@ public class ReservacionService {
                 .build();
 
         return toDto(repository.save(reservation));
+    }
+
+    public void cancelReservation(Integer reservationId) {
+        ReservacionEntity reservacion = this.repository.findById(reservationId)
+                .orElseThrow(() -> new ReservationNotFoundException("Reservación no encontrada."));
+
+        reservacion.setEstadoReservacion("CANCELADO");
     }
 
     private ReservacionDto toDto(ReservacionEntity e) {
