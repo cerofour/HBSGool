@@ -3,8 +3,13 @@ package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
-import pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto.ConfirmPaymentRequest;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.exception.NoCashierLoggedInException;
+import pe.edu.utp.dwi.HBSGool.exception.PaymentDoesntExistsException;
+import pe.edu.utp.dwi.HBSGool.exception.PaymentMethodMustBeRemote;
+import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
+import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 import java.time.LocalDateTime;
@@ -15,6 +20,8 @@ import java.util.List;
 public class RemotePaymentConfirmationService {
 	private final RemotePaymentConfirmationRepository repository;
 	private final AuthService authService;
+	private final CajeroService cashierService;
+	private final PagoService pagoService;
 
 	public List<RemotePaymentConfirmationDTO> findAll(
 			Integer cashierId,
@@ -48,9 +55,27 @@ public class RemotePaymentConfirmationService {
 	}
 
 	/// Realiza la confirmación de un pago remoto, extrae el cashierId del usuario logueado actualmente.
-	public void confirmPayment(ConfirmPaymentRequest request) {
+	public void confirmPayment(Integer paymentId) {
 		UsuarioEntity currentlyLoggedCashier = authService.getCurrentUser()
 				.orElseThrow(NoCashierLoggedInException::new);
+
+		CajeroEntity cashier = cashierService.findByUserId(currentlyLoggedCashier.getUserId())
+				.orElseThrow(NoCashierLoggedInException::new);
+
+		PagoEntity payment = pagoService.findById(paymentId)
+				.orElseThrow(() -> new PaymentDoesntExistsException(paymentId));
+
+		// método de pago debe ser diferente a EFECTIVO, ya que este es un pago remoto.
+		if (payment.getMedioPago().equals("EFECTIVO")) {
+			throw new PaymentMethodMustBeRemote();
+		}
+
+		RemotePaymentConfirmationEntity entity = new RemotePaymentConfirmationEntity(
+				null,payment.getIdPago(), Integer.valueOf(cashier.getCashierId()), LocalDateTime.now());
+
+		pagoService.markAsConfirmed(payment);
+
+		repository.save(entity);
 	}
 
 	private RemotePaymentConfirmationDTO toDTO(RemotePaymentConfirmationEntity x) {
@@ -58,8 +83,7 @@ public class RemotePaymentConfirmationService {
 				x.getConfirmationId(),
 				x.getPaymentId(),
 				x.getCashierId(),
-				x.getDate(),
-				x.getEvidence()
+				x.getDate()
 		);
 	}
 }

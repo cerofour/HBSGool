@@ -12,11 +12,11 @@ import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -123,5 +123,14 @@ public class PagoService {
                 e.getMedioPago(),
                 e.getEstadoPago()
         );
+    }
+
+    public Optional<PagoEntity> findById(Integer paymentId) {
+        return repository.findById(paymentId);
+    }
+
+    public void markAsConfirmed(PagoEntity payment) {
+        payment.setEstadoPago("CONFIRMADO");
+        repository.save(payment);
     }
 }

@@ -30,7 +30,7 @@ public class FileStorageService {
 			String uploadDir = "uploads/evidencias/";
 			Files.createDirectories(Paths.get(uploadDir));
 
-			String filename = "reserva_" + reservationId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+			String filename = "reserva_" + reservationId + "_" + System.currentTimeMillis();
 			Path filePath = Paths.get(uploadDir, filename);
 
 			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);

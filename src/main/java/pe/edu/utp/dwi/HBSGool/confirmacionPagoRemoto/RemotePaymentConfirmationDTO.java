@@ -16,5 +16,4 @@ public class RemotePaymentConfirmationDTO {
 	private Integer         paymentId;
 	private Integer         cashierId;
 	private LocalDateTime   date;
-	private String          paymentEvidence;
 }

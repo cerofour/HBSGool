@@ -57,7 +57,7 @@ public class PagoController {
         }
     }
 
-    @PreAuthorize("hasAnyRoles('ADMIN', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/evidencia/{paymentId}")
     public ResponseEntity<Resource> getPaymentEvidence(@PathVariable Integer paymentId) throws IOException {
         return service.getPaymentEvidence(paymentId);
