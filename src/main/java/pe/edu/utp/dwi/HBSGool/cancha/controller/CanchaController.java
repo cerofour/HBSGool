@@ -16,7 +16,7 @@ import java.util.List;
 public class CanchaController {
 	private final CanchaService canchaService;
 
-	@GetMapping
+	@GetMapping("/public")
 	public List<CanchaEntity> findAll() {
 		return canchaService.findAll();
 	}

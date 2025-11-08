@@ -34,6 +34,7 @@ public class SecurityConfiguration {
 						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				)
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/api/cancha/public/**").permitAll()
 						.requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers("/swagger-ui/**").permitAll()
 						.requestMatchers("/v3/api-docs/**").permitAll()
