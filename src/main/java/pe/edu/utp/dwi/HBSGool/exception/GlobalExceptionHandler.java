@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -92,16 +93,24 @@ public class GlobalExceptionHandler {
     // 📌 5️⃣ Errores de autenticación (401)
     @ExceptionHandler({
             UnauthenticatedException.class,
-            NoCashierLoggedInException.class
+            NoCashierLoggedInException.class,
+            InternalAuthenticationServiceException.class
     })
     public ResponseEntity<ApiError> handleAuthErrors(RuntimeException ex) {
-        var error = new ApiError(ex.getMessage(), 401, LocalDateTime.now());
+
+        String msg = ex.getMessage();
+
+        if (ex.getMessage() == null)
+            msg = "Error de autenticación";
+
+        var error = new ApiError(msg, 401, LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     // 📌 6️⃣ Cualquier otro error no controlado (500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex) {
+        ex.printStackTrace();
         var error = new ApiError("(ERROR NO MANEJADO) Error inesperado: " + ex.getMessage(), 500, LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
