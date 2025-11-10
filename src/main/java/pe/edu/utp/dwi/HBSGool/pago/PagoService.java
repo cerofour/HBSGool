@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
-import pe.edu.utp.dwi.HBSGool.exception.InvalidMoneyAmountException;
-import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
+import pe.edu.utp.dwi.HBSGool.exception.business.InvalidMoneyAmountException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionRepository;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
@@ -93,6 +93,14 @@ public class PagoService {
     }
 
     public PagoEntity createPayment(Integer reservationId, Integer cashierSessionId, BigDecimal money, String paymentMethod, String evidence, String estadoPago) {
+
+        ReservacionEntity reservation = reservacionRepository.findById(reservationId)
+                .orElseThrow();
+
+        if (money.compareTo(reservation.getPrecioTotal()) > 0)
+            throw new InvalidMoneyAmountException(String.format("El pago de %.2f excede al precio de la reservación %.2f",
+                    money, reservation.getPrecioTotal()));
+
         PagoEntity entity = new PagoEntity(null,
                 reservationId,
                 cashierSessionId,

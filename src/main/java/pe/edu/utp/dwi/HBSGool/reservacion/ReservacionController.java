@@ -31,7 +31,7 @@ public class ReservacionController {
         return ResponseEntity.ok(page);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER', 'USER')")
     @GetMapping
     public ResponseEntity<Page<ReservacionDto>> list(
             @RequestParam(name = "usuarioId", required = false) Integer usuarioId,

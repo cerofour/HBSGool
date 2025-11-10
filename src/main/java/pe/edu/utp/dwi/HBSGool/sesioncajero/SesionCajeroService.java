@@ -6,15 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaDto;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaEntity;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaRepositoy;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
-import pe.edu.utp.dwi.HBSGool.exception.CashierNotFoundException;
-import pe.edu.utp.dwi.HBSGool.exception.SesionCajeroException;
-import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
+import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
+import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 
 import java.time.LocalDateTime;
@@ -90,6 +88,8 @@ public class SesionCajeroService {
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
                 .findBySesionCajeroId(sesionCajero.get().getIdSesionCajero());
 
+
+        // Esta sesión de cajero no tiene un cierre asociado, es decir, está abierta
         if (cierreCajero.isEmpty()) return toDto(sesionCajero.get());
 
         return null;

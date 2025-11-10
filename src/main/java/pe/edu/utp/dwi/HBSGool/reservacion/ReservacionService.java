@@ -13,7 +13,12 @@ import pe.edu.utp.dwi.HBSGool.cancha.model.CanchaEntity;
 import pe.edu.utp.dwi.HBSGool.cancha.service.CanchaService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
-import pe.edu.utp.dwi.HBSGool.exception.*;
+import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.exception.business.ReservationOverlapException;
+import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
+import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.CanchaNotFoundException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierRequest;
@@ -21,14 +26,12 @@ import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierResult;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserRequest;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserResult;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroDto;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service

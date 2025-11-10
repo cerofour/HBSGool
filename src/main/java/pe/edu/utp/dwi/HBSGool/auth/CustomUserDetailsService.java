@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
-import pe.edu.utp.dwi.HBSGool.exception.UsernameNotFoundException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.UsernameNotFoundException;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioRepository;
 

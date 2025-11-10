@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.exception;
+package pe.edu.utp.dwi.HBSGool.exception.business;
 
 public class InvalidImageException extends RuntimeException {
 	public InvalidImageException() {
