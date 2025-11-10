@@ -5,17 +5,21 @@ import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterRequestDTO;
 import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterUserResult;
+import pe.edu.utp.dwi.HBSGool.cajero.dto.CashierDTO;
 import pe.edu.utp.dwi.HBSGool.cajero.dto.RegisterCashierResult;
 import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
 import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
+import pe.edu.utp.dwi.HBSGool.usuario.UsuarioRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CajeroService {
 	private final CajeroRepository repo;
+	private final UsuarioRepository userRepo;
 	private final AuthService authService;
 
 	/// Retorna el cajero asociado al usuario con userId.
@@ -24,6 +28,29 @@ public class CajeroService {
 				.orElseThrow(() -> new UserIsNotCashierException("Este usuario no es un cajero."));
 
 		return Optional.of(cashier);
+	}
+
+	public List<CashierDTO> findAll() {
+		// Obtenemos todos los cajeros
+		return repo.findAll()
+				.stream()
+				.map(cajero -> {
+					// Buscamos al usuario asociado
+					var user = userRepo.findById(cajero.getUserId())
+							.orElse(null);
+
+					// Construimos el DTO combinando datos
+					return CashierDTO.builder()
+							.idCajero(Integer.valueOf(cajero.getCashierId()))
+							.idUsuario(cajero.getUserId())
+							.nombreCompleto(user != null ? user.getName() + " " + user.getFatherLastname() + " " + user.getMotherLastname() : null)
+							.email(user != null ? user.getEmail() : null)
+							.dni(user != null ? user.getDni() : null)
+							.celular(user != null ? user.getCellphone() : null)
+							.activo(user != null ? cajero.getActive() : null)
+							.build();
+				})
+				.toList();
 	}
 
 	public Optional<CajeroEntity> getCurrentCashier() {

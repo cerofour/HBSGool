@@ -12,6 +12,7 @@ public class CurrentCashierSessionResult {
     private Boolean abierta;
     private Integer idSesion;
     private Integer idCierre;
+    private Short idCajero;
     private Double montoApertura;
     private LocalDateTime fechaApertura;
 }

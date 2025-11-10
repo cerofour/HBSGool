@@ -104,6 +104,7 @@ public class SesionCajeroService {
                     .abierta(false)
                     .idSesion(null)
                     .idCierre(null)
+                    .idCajero(cajeroId)
                     .fechaApertura(null)
                     .montoApertura(0.0)
                     .build();
@@ -121,6 +122,7 @@ public class SesionCajeroService {
                     .fechaApertura(sesion.getFechaApertura())
                     .idSesion(sesion.getIdSesionCajero())
                     .idCierre(null)
+                    .idCajero(cajeroId)
                     .build();
 
         return CurrentCashierSessionResult.builder()
@@ -129,6 +131,7 @@ public class SesionCajeroService {
                 .fechaApertura(sesion.getFechaApertura())
                 .idSesion(sesion.getIdSesionCajero())
                 .idCierre(cierreCajero.get().getIdCierreCajero())
+                .idCajero(cajeroId)
                 .build();
 
     }
