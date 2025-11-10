@@ -88,6 +88,8 @@ public class SesionCajeroService {
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
                 .findBySesionCajeroId(sesionCajero.get().getIdSesionCajero());
 
+
+        // Esta sesión de cajero no tiene un cierre asociado, es decir, está abierta
         if (cierreCajero.isEmpty()) return toDto(sesionCajero.get());
 
         return null;

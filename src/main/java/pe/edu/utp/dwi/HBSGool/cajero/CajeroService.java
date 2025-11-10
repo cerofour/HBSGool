@@ -38,7 +38,7 @@ public class CajeroService {
 
 	public RegisterCashierResult createCashier(RegisterRequestDTO registerRequestDTO) {
 
-		RegisterUserResult registerUserResult = authService.register(registerRequestDTO);
+		RegisterUserResult registerUserResult = authService.registerCashier(registerRequestDTO);
 
 		if (registerUserResult.exito()) {
 			CajeroEntity entity = new CajeroEntity(null, registerUserResult.usuarioId(), true);

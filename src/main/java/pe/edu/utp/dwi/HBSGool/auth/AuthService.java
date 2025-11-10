@@ -13,7 +13,6 @@ import pe.edu.utp.dwi.HBSGool.auth.dto.*;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioRepository;
 
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -37,6 +36,10 @@ public class AuthService {
 
 		var user = userRepo.findByEmail(req.getEmail())
 				.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+		if (user.getRol().equals("ROLE_CASHIER")) {
+
+		}
 
 		String token = jwtUtil.generateToken(user.getEmail());
 		return LoginResult.builder()
@@ -101,5 +104,37 @@ public class AuthService {
 
 		String username = auth.getName(); // normalmente el email o username
 		return userRepo.findByEmail(username);
+	}
+
+	public RegisterUserResult registerCashier(RegisterRequestDTO req) {
+		if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+			throw new IllegalArgumentException("Usuario ya existe");
+		}
+
+		var u = new UsuarioEntity();
+		u.setName(req.getNombre());
+		u.setFatherLastname(req.getApellidoPaterno());
+		u.setMotherLastname(req.getApellidoMaterno());
+		u.setDni(req.getDni());
+		u.setCellphone(req.getCelular());
+		u.setEmail(req.getEmail());
+		u.setActive(true);
+		u.setPassword(passwordEncoder.encode(req.getContrasena()));
+		u.setRol("ROLE_CASHIER");
+
+		userRepo.save(u);
+
+		RegisterUserResult result = new RegisterUserResult(
+				true,
+				u.getUserId(),
+				u.getName(),
+				u.getFatherLastname(),
+				u.getMotherLastname(),
+				u.getDni(),
+				u.getCellphone(),
+				u.getEmail()
+		);
+
+		return result;
 	}
 }
