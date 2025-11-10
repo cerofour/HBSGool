@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,11 +47,11 @@ public class SesionCajeroController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
-    @GetMapping("/{cashierId}/ultima")
-    public ResponseEntity<SesionCajeroDto> getLastSesionByCajeroId(@PathVariable short cashierId) {
-        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(cashierId);
-        if(sesionCajero == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(sesionCajero);
+    @GetMapping("/ultima")
+    public ResponseEntity<CurrentCashierSessionResult> getLastSesionByCajeroId(
+            @RequestParam(required = false) Short cajeroId,
+            @RequestParam(required = false) Integer usuarioId) {
+        return ResponseEntity.ok(sesionCajeroService.getLastSesionByCajeroId(cajeroId, usuarioId));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")

@@ -27,6 +27,7 @@ import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserRequest;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserResult;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroDto;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
@@ -89,9 +90,9 @@ public class ReservacionService {
 
         if (cajero.isEmpty()) throw new UserIsNotCashierException("Este usuario no es un cajero");
 
-        SesionCajeroDto sesionCajero = sesionCajeroService.getLastSesionByCajeroId(cajero.get().getCashierId());
+        CurrentCashierSessionResult sesionCajero = sesionCajeroService.getLastSesionByCajeroId(cajero.get().getCashierId(), null);
 
-        Optional<CierreCajeroEntity> cierreCajero = cierreCajeroService.getBySesionCashierId(sesionCajero.getIdSesionCajero());
+        Optional<CierreCajeroEntity> cierreCajero = cierreCajeroService.getBySesionCashierId(sesionCajero.getIdSesion());
 
         if (cierreCajero.isPresent()) throw new SesionCajeroException("Este cajero no tiene sesion abierta.");
 
@@ -134,7 +135,7 @@ public class ReservacionService {
 
         PagoEntity payment = pagoService.createPayment(
                 reservation.getIdReservacion(),
-                sesionCajero.getIdSesionCajero(),
+                sesionCajero.getIdSesion(),
                 BigDecimal.valueOf(totalPrice),
                 request.medioPago(),
                 evidencePath,
