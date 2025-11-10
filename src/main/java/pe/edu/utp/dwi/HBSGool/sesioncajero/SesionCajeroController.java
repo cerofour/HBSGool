@@ -59,6 +59,4 @@ public class SesionCajeroController {
     public ResponseEntity<SesionCajeroDto> createCashierSession(@RequestBody CreateCashierSessionRequest createCashierSessionRequest) {
         return ResponseEntity.ok(sesionCajeroService.createCashierSession(createCashierSessionRequest));
     }
-
-
 }

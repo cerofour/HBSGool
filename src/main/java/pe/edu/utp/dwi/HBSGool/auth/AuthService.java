@@ -46,6 +46,7 @@ public class AuthService {
 				.auth(new AuthResult(token,
 						jwtUtil.extractClaim(token, Claims::getExpiration)))
 				.profile(UserProfile.builder()
+						.idUsuario(user.getUserId())
 						.nombre(user.getName())
 						.apellidoPaterno(user.getFatherLastname())
 						.apellidoMaterno(user.getMotherLastname())
