@@ -21,10 +21,7 @@ import pe.edu.utp.dwi.HBSGool.exception.notfound.CanchaNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierRequest;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierResult;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserRequest;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserResult;
+import pe.edu.utp.dwi.HBSGool.reservacion.dto.*;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroDto;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
@@ -33,6 +30,7 @@ import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -236,6 +234,11 @@ public class ReservacionService {
         );
     }
 
+    private ReservacionAdminDTO toAdminDto(ReservacionEntity e) {
+        return ReservacionAdminDTO.builder().build();
+    }
+
+
     static public Duration stringToDuration(String duration) {
         if (duration == null || duration.isBlank()) return Duration.ZERO;
 
@@ -282,5 +285,64 @@ public class ReservacionService {
         reservation.setEstadoReservacion("CONFIRMADA");
 
         repository.save(reservation);
+    }
+
+    private BigDecimal getTotalPayment(List<PagoEntity> payments) {
+
+        final BigDecimal[] totalPaid = {new BigDecimal("0.0")};
+
+        payments
+                .forEach(x -> {
+                    totalPaid[0] = totalPaid[0].add(x.getCantidadDinero());
+                });
+
+        return totalPaid[0];
+    }
+
+    public Page<ReservacionAdminDTO> listReservacionesForAdmin(Integer usuarioId, Integer canchaId, String estado, String dni, Pageable pageable) {
+        Page<ReservacionEntity> page;
+
+        if (usuarioId != null) {
+            page = repository.findByUsuarioId(usuarioId, pageable);
+        } else if (canchaId != null) {
+            page = repository.findByCanchaId(canchaId, pageable);
+        } else if (estado != null) {
+            page = repository.findByEstadoReservacion(estado, pageable);
+        } else if (dni != null) {
+            page = repository.findByDni(dni, pageable);
+        } else {
+            page = repository.findAll(pageable);
+        }
+
+        return page.map(reservation -> {
+
+            var dtoBuilder = ReservacionAdminDTO.builder();
+
+            dtoBuilder
+                    .idReservacion(reservation.getIdReservacion())
+                    .tiempoInicio(reservation.getTiempoInicio())
+                    .canchaId(reservation.getCanchaId())
+                    .estadoReservacion(reservation.getEstadoReservacion())
+                    .precioTotal(reservation.getPrecioTotal())
+                    .cajeroId(reservation.getCajeroId())
+                    .dni(reservation.getDni())
+                    .usuarioId(reservation.getUsuarioId())
+                    .duracion(reservation.getDuracion().toString());
+
+            List<PagoEntity> payments = pagoService.findByReservationId(reservation.getIdReservacion());
+
+            if (reservation.getEstadoReservacion().equals("CONFIRMADA")) {
+                dtoBuilder.saldo(new BigDecimal("0.0"));
+                dtoBuilder.pagos(List.of());
+            }
+            else {
+                dtoBuilder.saldo(reservation.getPrecioTotal().subtract(getTotalPayment(payments)));
+                dtoBuilder.pagos(
+                        payments.stream().map(PagoEntity::getIdPago).toList()
+                );
+            }
+
+            return dtoBuilder.build();
+        });
     }
 }
