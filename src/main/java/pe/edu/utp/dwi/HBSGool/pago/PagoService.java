@@ -121,6 +121,9 @@ public class PagoService {
     }
 
     public PagoByIdDto getById(Integer id) {
+
+        System.out.printf("El id dentro del servicio es %d", id);
+
         return repository.findById(id).map(this::toByIdDto)
                 .orElseThrow(() -> new PaymentDoesntExistsException(id));
     }
@@ -142,6 +145,7 @@ public class PagoService {
     }
 
     private PagoDto toDto(PagoEntity e) {
+
         return new PagoDto(
                 e.getIdPago(),
                 e.getReservacionId(),
@@ -158,7 +162,16 @@ public class PagoService {
         return PagoByIdDto.builder()
                 .idPago(e.getIdPago())
                 .reservacionId(e.getReservacionId())
-                .sesionCajero(sesionCajeroService.getById(e.getSesionCajeroId()))
+                .sesionCajero(
+                        e.getEstadoPago().equals("CONFIRMADO")
+                                ? sesionCajeroService.getById(e.getSesionCajeroId())
+                                : null
+                )
+                .cantidadDinero(e.getCantidadDinero())
+                .fecha(e.getFecha())
+                .medioPago(e.getMedioPago())
+                .estadoPago(e.getEstadoPago())
+                .evidencia(e.getEvidencia())
                 .build();
     }
 
@@ -167,8 +180,9 @@ public class PagoService {
         return repository.findById(paymentId);
     }
 
-    public void markAsConfirmed(PagoEntity payment) {
+    public void markAsConfirmed(PagoEntity payment, Integer cashierSession) {
         payment.setEstadoPago("CONFIRMADO");
+        payment.setSesionCajeroId(cashierSession);
         repository.save(payment);
     }
 

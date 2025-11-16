@@ -40,7 +40,7 @@ public class PagoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/{id}")
     public ResponseEntity<PagoByIdDto> getById(@PathVariable Integer id) {
-        PagoByIdDto dto = service.getById(id);
+            PagoByIdDto dto = service.getById(id);
         if (dto == null) {
             return ResponseEntity.notFound().build();
         }
