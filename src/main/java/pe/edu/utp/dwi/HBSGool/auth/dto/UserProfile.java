@@ -6,6 +6,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class UserProfile {
+	private Integer idUsuario;
 	private String nombre;
 	private String apellidoPaterno;
 	private String apellidoMaterno;

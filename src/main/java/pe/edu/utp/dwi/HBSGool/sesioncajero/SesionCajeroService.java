@@ -10,10 +10,12 @@ import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
+import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
 import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -78,21 +80,59 @@ public class SesionCajeroService {
         return toDto(entity);
     }
 
-    public SesionCajeroDto getLastSesionByCajeroId(short cajeroId) {
+    public CurrentCashierSessionResult getLastSesionByCajeroId(Short cajeroId, Integer usuarioId) {
+
+        Short cashierId = cajeroId;
+
+        if (cashierId == null) {
+
+            if (usuarioId == null) {
+                throw new SesionCajeroException("Este usuario no es un cajero.");
+            }
+
+            cashierId = cajeroService.findByUserId(usuarioId)
+                    .orElseThrow(() -> new UserIsNotCashierException("Este usuario no es un cajero."))
+                    .getCashierId();
+        }
 
         Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository
-                .findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cajeroId);
+                .findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cashierId);
 
-        if (sesionCajero.isEmpty()) return null;
+        // el caso donde no existe ninguna sesión de cajero para este cajero
+        if (sesionCajero.isEmpty())
+            return CurrentCashierSessionResult.builder()
+                    .abierta(false)
+                    .idSesion(null)
+                    .idCierre(null)
+                    .idCajero(cajeroId)
+                    .fechaApertura(null)
+                    .montoApertura(0.0)
+                    .build();
 
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
                 .findBySesionCajeroId(sesionCajero.get().getIdSesionCajero());
 
+        SesionCajeroEntity sesion = sesionCajero.get();
 
         // Esta sesión de cajero no tiene un cierre asociado, es decir, está abierta
-        if (cierreCajero.isEmpty()) return toDto(sesionCajero.get());
+        if (cierreCajero.isEmpty())
+            return CurrentCashierSessionResult.builder()
+                    .abierta(true)
+                    .montoApertura(sesion.getMontoInicial())
+                    .fechaApertura(sesion.getFechaApertura())
+                    .idSesion(sesion.getIdSesionCajero())
+                    .idCierre(null)
+                    .idCajero(cajeroId)
+                    .build();
 
-        return null;
+        return CurrentCashierSessionResult.builder()
+                .abierta(false)
+                .montoApertura(sesion.getMontoInicial())
+                .fechaApertura(sesion.getFechaApertura())
+                .idSesion(sesion.getIdSesionCajero())
+                .idCierre(cierreCajero.get().getIdCierreCajero())
+                .idCajero(cajeroId)
+                .build();
 
     }
 
