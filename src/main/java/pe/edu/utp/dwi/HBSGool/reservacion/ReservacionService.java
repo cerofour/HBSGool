@@ -318,13 +318,17 @@ public class ReservacionService {
 
             var dtoBuilder = ReservacionAdminDTO.builder();
 
+            if (reservation.getCajeroId() != null)
+                dtoBuilder.cajero(
+                        cajeroService.toDTO(cajeroService.findByCashierId(reservation.getCajeroId()))
+                );
+
             dtoBuilder
                     .idReservacion(reservation.getIdReservacion())
                     .tiempoInicio(reservation.getTiempoInicio())
                     .canchaId(reservation.getCanchaId())
                     .estadoReservacion(reservation.getEstadoReservacion())
                     .precioTotal(reservation.getPrecioTotal())
-                    .cajeroId(reservation.getCajeroId())
                     .dni(reservation.getDni())
                     .usuarioId(reservation.getUsuarioId())
                     .duracion(reservation.getDuracion().toString());
