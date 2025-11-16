@@ -20,7 +20,7 @@ public class RemotePaymentConfirmationController {
 
 	@GetMapping
 	@Operation(summary = "Listar confirmaciones de pago remoto con filtros opcionales")
-	@PreAuthorize("hasRole('ADMIN', 'CASHIER')")
+	@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
 	public List<RemotePaymentConfirmationDTO> getAll(
 			@Parameter(description = "ID del cajero (opcional)")
 			@RequestParam(required = false) Integer cashierId,
@@ -40,6 +40,7 @@ public class RemotePaymentConfirmationController {
 		return service.findAll(cashierId, date, startDate, endDate);
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
 	@PostMapping("/{paymentId}/confirmar")
 	public ResponseEntity<Void> confirmRemotePayment(@PathVariable Integer paymentId) {
 		service.confirmPayment(paymentId);
