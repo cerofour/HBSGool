@@ -99,4 +99,26 @@ public class RemotePaymentConfirmationService {
 				x.getDate()
 		);
 	}
+
+	public RemotePaymentConfirmationDTO getById(Integer id) {
+		RemotePaymentConfirmationEntity x = repository.findById(id)
+				.orElseThrow(() -> new PaymentDoesntExistsException(id));
+		return new RemotePaymentConfirmationDTO(
+				x.getConfirmationId(),
+				x.getPaymentId(),
+				x.getCashierId(),
+				x.getDate()
+		);
+	}
+
+    public RemotePaymentConfirmationDTO getByPaymentId(Integer paymentId) {
+		RemotePaymentConfirmationEntity x = repository.findByPaymentId(paymentId)
+				.orElseThrow(() -> new PaymentDoesntExistsException(paymentId));
+		return new RemotePaymentConfirmationDTO(
+				x.getConfirmationId(),
+				x.getPaymentId(),
+				x.getCashierId(),
+				x.getDate()
+		);
+	}
 }

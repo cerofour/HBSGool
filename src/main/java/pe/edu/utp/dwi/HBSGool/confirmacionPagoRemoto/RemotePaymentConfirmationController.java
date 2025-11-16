@@ -40,8 +40,21 @@ public class RemotePaymentConfirmationController {
 		return service.findAll(cashierId, date, startDate, endDate);
 	}
 
+	@GetMapping("/{confirmationId}")
 	@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
-	@PostMapping("/{paymentId}/confirmar")
+	public ResponseEntity<RemotePaymentConfirmationDTO> getById(@PathVariable Integer confirmationId) {
+		return ResponseEntity.ok(service.getById(confirmationId));
+	}
+
+
+	@GetMapping("/pago/{paymentId}")
+	@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+	public ResponseEntity<RemotePaymentConfirmationDTO> getByPaymentId(@PathVariable Integer paymentId) {
+		return ResponseEntity.ok(service.getByPaymentId(paymentId));
+	}
+
+	@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+	@PostMapping("/pago/{paymentId}/confirmar")
 	public ResponseEntity<Void> confirmRemotePayment(@PathVariable Integer paymentId) {
 		service.confirmPayment(paymentId);
 
