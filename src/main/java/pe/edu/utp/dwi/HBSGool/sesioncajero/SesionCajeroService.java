@@ -17,6 +17,7 @@ import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
 import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -171,7 +172,13 @@ public class SesionCajeroService {
         return page.map(this::toDto);
     }
 
-    public Page<SesionCajeroDto> getById(Short cajeroId, Pageable pageable) {
+    public SesionCajeroDto getById(Integer sessionId) {
+        return sesionCajeroRepository.findById(sessionId)
+                .map(this::toDto)
+                .orElseThrow(() -> new CashierNotFoundException("No se encontró una sesión con esta ID."));
+    }
+
+    public Page<SesionCajeroDto> getByCashierId(Short cajeroId, Pageable pageable) {
         Page<SesionCajeroEntity> page = sesionCajeroRepository.findByCajero_CashierId(cajeroId, pageable);
         return page.map(this::toDto);
     }
@@ -179,6 +186,7 @@ public class SesionCajeroService {
     private SesionCajeroDto toDto(SesionCajeroEntity e) {
         return SesionCajeroDto.builder()
                 .idSesionCajero(e.getIdSesionCajero())
+                .idCajero(e.getCajero().getCashierId())
                 .montoInicial(e.getMontoInicial())
                 .fechaApertura(e.getFechaApertura())
                 .build();

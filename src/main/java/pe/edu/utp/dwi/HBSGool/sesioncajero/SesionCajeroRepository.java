@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface SesionCajeroRepository extends JpaRepository<SesionCajeroEntity, Integer> {
 
+    Optional<SesionCajeroEntity> findById(Integer id);
 
     Page<SesionCajeroEntity> findAll(Pageable pageable);
 

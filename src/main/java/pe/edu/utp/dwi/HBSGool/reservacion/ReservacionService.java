@@ -22,7 +22,6 @@ import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.reservacion.dto.*;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroDto;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;

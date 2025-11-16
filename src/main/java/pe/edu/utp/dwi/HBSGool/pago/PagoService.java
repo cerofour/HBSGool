@@ -13,9 +13,15 @@ import org.springframework.web.multipart.MultipartFile;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.exception.business.InvalidMoneyAmountException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.PaymentDoesntExistsException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoByIdDto;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionRepository;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroRepository;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 
 import java.io.IOException;
@@ -34,6 +40,7 @@ public class PagoService {
     private final PagoRepository repository;
     private final ReservacionRepository reservacionRepository;
     private final FileStorageService fileStorageService;
+    private final SesionCajeroService sesionCajeroService;
     private final CajeroService cashierService;
 
     public Page<PagoDto> listPagos(
@@ -113,8 +120,9 @@ public class PagoService {
         return repository.save(entity);
     }
 
-    public PagoDto getById(Integer id) {
-        return repository.findById(id).map(this::toDto).orElse(null);
+    public PagoByIdDto getById(Integer id) {
+        return repository.findById(id).map(this::toByIdDto)
+                .orElseThrow(() -> new PaymentDoesntExistsException(id));
     }
 
     public PagoDto cancelPago(Integer idPago) {
@@ -145,6 +153,15 @@ public class PagoService {
                 e.getEvidencia()
         );
     }
+
+    private PagoByIdDto toByIdDto(PagoEntity e) {
+        return PagoByIdDto.builder()
+                .idPago(e.getIdPago())
+                .reservacionId(e.getReservacionId())
+                .sesionCajero(sesionCajeroService.getById(e.getSesionCajeroId()))
+                .build();
+    }
+
 
     public Optional<PagoEntity> findById(Integer paymentId) {
         return repository.findById(paymentId);

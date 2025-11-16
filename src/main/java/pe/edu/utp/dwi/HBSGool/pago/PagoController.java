@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoByIdDto;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -37,8 +39,8 @@ public class PagoController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/{id}")
-    public ResponseEntity<PagoDto> getById(@PathVariable Integer id) {
-        PagoDto dto = service.getById(id);
+    public ResponseEntity<PagoByIdDto> getById(@PathVariable Integer id) {
+        PagoByIdDto dto = service.getById(id);
         if (dto == null) {
             return ResponseEntity.notFound().build();
         }
