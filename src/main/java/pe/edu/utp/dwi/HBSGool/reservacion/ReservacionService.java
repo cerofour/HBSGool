@@ -298,7 +298,7 @@ public class ReservacionService {
         return totalPaid[0];
     }
 
-    public Page<ReservacionAdminDTO> listReservacionesForAdmin(Integer usuarioId, Integer canchaId, String estado, String dni, Pageable pageable) {
+    public Page<ReservacionAdminDTO> listReservacionesForAdmin(Integer usuarioId, Integer canchaId, List<String> estado, String dni, Pageable pageable) {
         Page<ReservacionEntity> page;
 
         if (usuarioId != null) {
@@ -306,7 +306,7 @@ public class ReservacionService {
         } else if (canchaId != null) {
             page = repository.findByCanchaId(canchaId, pageable);
         } else if (estado != null) {
-            page = repository.findByEstadoReservacion(estado, pageable);
+            page = repository.findByEstadoReservacionIn(estado, pageable);
         } else if (dni != null) {
             page = repository.findByDni(dni, pageable);
         } else {

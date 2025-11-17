@@ -195,8 +195,13 @@ public class PagoService {
 
         BigDecimal totalPaid = BigDecimal.valueOf(0.0);
 
-        for (PagoEntity p : allOtherPayments)
+        for (PagoEntity p : allOtherPayments) {
+            
+            if (p.getEstadoPago().equals("PENDIENTE") || p.getEstadoPago().equals("RECHAZADO"))
+                continue;
+
             totalPaid = totalPaid.add(p.getCantidadDinero());
+        }
 
         BigDecimal saldo = reservation.getPrecioTotal().subtract(totalPaid);
 
