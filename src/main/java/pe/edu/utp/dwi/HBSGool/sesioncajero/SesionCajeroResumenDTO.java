@@ -3,6 +3,7 @@ package pe.edu.utp.dwi.HBSGool.sesioncajero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import pe.edu.utp.dwi.HBSGool.cajero.dto.CashierDTO;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class SesionCajeroResumenDTO {
     private Integer idSesionCajero;
-    private Short idCajero;
+    private CashierDTO cajero;
     private LocalDateTime fechaApertura;
     private LocalDateTime fechaCierre;
     private Double montoTeorico;

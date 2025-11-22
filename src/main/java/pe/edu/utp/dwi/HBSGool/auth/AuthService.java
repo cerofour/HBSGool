@@ -107,7 +107,7 @@ public class AuthService {
 		return userRepo.findByEmail(username);
 	}
 
-	public RegisterUserResult registerCashier(RegisterRequestDTO req) {
+	public UsuarioEntity registerCashier(RegisterRequestDTO req) {
 		if (userRepo.findByEmail(req.getEmail()).isPresent()) {
 			throw new IllegalArgumentException("Usuario ya existe");
 		}
@@ -125,17 +125,6 @@ public class AuthService {
 
 		userRepo.save(u);
 
-		RegisterUserResult result = new RegisterUserResult(
-				true,
-				u.getUserId(),
-				u.getName(),
-				u.getFatherLastname(),
-				u.getMotherLastname(),
-				u.getDni(),
-				u.getCellphone(),
-				u.getEmail()
-		);
-
-		return result;
+		return u;
 	}
 }

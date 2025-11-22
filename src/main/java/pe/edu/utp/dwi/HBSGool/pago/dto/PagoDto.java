@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.pago;
+package pe.edu.utp.dwi.HBSGool.pago.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

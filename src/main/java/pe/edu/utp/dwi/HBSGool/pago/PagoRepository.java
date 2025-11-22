@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PagoRepository extends JpaRepository<PagoEntity, Integer> {
@@ -21,6 +22,8 @@ public interface PagoRepository extends JpaRepository<PagoEntity, Integer> {
                       AND sesionCajeroId = :sesionCajeroId
             """, nativeQuery = true)
     double getTotalCashPaymentsConfirmedByCashierSessionId(Integer sesionCajeroId);
+
+    Optional<PagoEntity> findById(Integer id);
 
     // Buscar por reservación
     Page<PagoEntity> findByReservacionId(Integer reservacionId, Pageable pageable);

@@ -38,7 +38,7 @@ public class BovedaService {
 
         if (cajero.isEmpty()) throw new UserIsNotCashierException("Este usuario no es un cajero");
 
-        Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository.findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cajero.get().getCashierId());
+        Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository.findFirstByCajero_CashierIdOrderByFechaAperturaDescIdSesionCajeroDesc(cajero.get().getCashierId());
 
         if (sesionCajero.isEmpty()) throw new SesionCajeroException("Este cajero no tiene sesion abierta.");
 

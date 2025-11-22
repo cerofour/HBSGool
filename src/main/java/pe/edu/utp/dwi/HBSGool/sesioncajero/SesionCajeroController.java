@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +42,7 @@ public class SesionCajeroController {
             @PageableDefault(size = 10, sort = "fechaApertura", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<SesionCajeroDto> page;
-        if (cajeroId != null) page = sesionCajeroService.getById(cajeroId, pageable);
+        if (cajeroId != null) page = sesionCajeroService.getByCashierId(cajeroId, pageable);
         else page = sesionCajeroService.getAll(pageable);
         return ResponseEntity.ok(page);
     }

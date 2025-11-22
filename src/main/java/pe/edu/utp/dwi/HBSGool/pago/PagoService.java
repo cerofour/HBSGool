@@ -13,9 +13,15 @@ import org.springframework.web.multipart.MultipartFile;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.exception.business.InvalidMoneyAmountException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.PaymentDoesntExistsException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoByIdDto;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionRepository;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroRepository;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 
 import java.io.IOException;
@@ -34,6 +40,7 @@ public class PagoService {
     private final PagoRepository repository;
     private final ReservacionRepository reservacionRepository;
     private final FileStorageService fileStorageService;
+    private final SesionCajeroService sesionCajeroService;
     private final CajeroService cashierService;
 
     public Page<PagoDto> listPagos(
@@ -113,8 +120,12 @@ public class PagoService {
         return repository.save(entity);
     }
 
-    public PagoDto getById(Integer id) {
-        return repository.findById(id).map(this::toDto).orElse(null);
+    public PagoByIdDto getById(Integer id) {
+
+        System.out.printf("El id dentro del servicio es %d", id);
+
+        return repository.findById(id).map(this::toByIdDto)
+                .orElseThrow(() -> new PaymentDoesntExistsException(id));
     }
 
     public PagoDto cancelPago(Integer idPago) {
@@ -134,6 +145,7 @@ public class PagoService {
     }
 
     private PagoDto toDto(PagoEntity e) {
+
         return new PagoDto(
                 e.getIdPago(),
                 e.getReservacionId(),
@@ -146,12 +158,31 @@ public class PagoService {
         );
     }
 
+    private PagoByIdDto toByIdDto(PagoEntity e) {
+        return PagoByIdDto.builder()
+                .idPago(e.getIdPago())
+                .reservacionId(e.getReservacionId())
+                .sesionCajero(
+                        e.getEstadoPago().equals("CONFIRMADO")
+                                ? sesionCajeroService.getById(e.getSesionCajeroId())
+                                : null
+                )
+                .cantidadDinero(e.getCantidadDinero())
+                .fecha(e.getFecha())
+                .medioPago(e.getMedioPago())
+                .estadoPago(e.getEstadoPago())
+                .evidencia(e.getEvidencia())
+                .build();
+    }
+
+
     public Optional<PagoEntity> findById(Integer paymentId) {
         return repository.findById(paymentId);
     }
 
-    public void markAsConfirmed(PagoEntity payment) {
+    public void markAsConfirmed(PagoEntity payment, Integer cashierSession) {
         payment.setEstadoPago("CONFIRMADO");
+        payment.setSesionCajeroId(cashierSession);
         repository.save(payment);
     }
 
@@ -164,8 +195,13 @@ public class PagoService {
 
         BigDecimal totalPaid = BigDecimal.valueOf(0.0);
 
-        for (PagoEntity p : allOtherPayments)
+        for (PagoEntity p : allOtherPayments) {
+            
+            if (p.getEstadoPago().equals("PENDIENTE") || p.getEstadoPago().equals("RECHAZADO"))
+                continue;
+
             totalPaid = totalPaid.add(p.getCantidadDinero());
+        }
 
         BigDecimal saldo = reservation.getPrecioTotal().subtract(totalPaid);
 
