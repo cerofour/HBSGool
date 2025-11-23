@@ -9,6 +9,8 @@ import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.dto.LogoutCashierRequest;
 import pe.edu.utp.dwi.HBSGool.pago.PagoRepository;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -25,6 +27,10 @@ public class CierreCajeroService {
         return cierreCajeroRepository.findBySesionCajeroId(sesionCashierId);
     }
 
+    public double getTheoricMoney(Integer cashierSessionId) {
+        return pagoRepository.getTotalCashPaymentsConfirmedByCashierSessionId(cashierSessionId);
+    }
+
     public CierreCajeroDto logoutCashier(LogoutCashierRequest logoutCashierRequest) {
 
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
@@ -35,8 +41,8 @@ public class CierreCajeroService {
         CierreCajeroEntity entity = cierreCajeroRepository.save(
                 CierreCajeroEntity.builder()
                         .sesionCajeroId(logoutCashierRequest.getSesionCajeroId())
-                        .fecha(logoutCashierRequest.getFecha())
-                        .montoTeorico(pagoRepository.getTotalCashPaymentsConfirmedByCashierSessionId(logoutCashierRequest.getSesionCajeroId()))
+                        .fecha(LocalDateTime.now())
+                        .montoTeorico(getTheoricMoney(logoutCashierRequest.getSesionCajeroId()))
                         .montoReal(logoutCashierRequest.getMontoReal())
                         .build()
         );
