@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.sesioncajero;
+package pe.edu.utp.dwi.HBSGool.sesioncajero.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 public class SesionCajeroDto {
 
     private Integer idSesionCajero;
+
+    private Short idCajero;
 
     private double montoInicial;
 
