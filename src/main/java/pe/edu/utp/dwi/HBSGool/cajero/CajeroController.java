@@ -1,13 +1,14 @@
 package pe.edu.utp.dwi.HBSGool.cajero;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pe.edu.utp.dwi.HBSGool.auth.dto.RegisterRequestDTO;
+import pe.edu.utp.dwi.HBSGool.cajero.dto.CashierDTO;
 import pe.edu.utp.dwi.HBSGool.cajero.dto.RegisterCashierResult;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cajero")
@@ -15,6 +16,12 @@ import pe.edu.utp.dwi.HBSGool.cajero.dto.RegisterCashierResult;
 public class CajeroController {
 
 	private final CajeroService cashierService;
+
+	@PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+	@GetMapping()
+	public ResponseEntity<List<CashierDTO>> getAllCashiers() {
+		return ResponseEntity.ok(cashierService.findAll());
+	}
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping()

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface ReservacionRepository extends JpaRepository<ReservacionEntity, Integer> {
@@ -19,6 +20,8 @@ public interface ReservacionRepository extends JpaRepository<ReservacionEntity, 
     Page<ReservacionEntity> findByCanchaId(Integer canchaId, Pageable pageable);
 
     // Buscar por estado
+    Page<ReservacionEntity> findByEstadoReservacionIn(List<String> estados, Pageable pageable);
+
     Page<ReservacionEntity> findByEstadoReservacion(String estado, Pageable pageable);
 
     // Buscar por DNI

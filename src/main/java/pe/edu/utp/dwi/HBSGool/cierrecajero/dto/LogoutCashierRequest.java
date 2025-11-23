@@ -1,16 +1,11 @@
 package pe.edu.utp.dwi.HBSGool.cierrecajero.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
-@Builder
 public class LogoutCashierRequest {
     private int sesionCajeroId;
 

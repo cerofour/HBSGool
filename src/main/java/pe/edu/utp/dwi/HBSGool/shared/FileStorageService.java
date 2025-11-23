@@ -2,8 +2,8 @@ package pe.edu.utp.dwi.HBSGool.shared;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pe.edu.utp.dwi.HBSGool.exception.InvalidImageException;
-import pe.edu.utp.dwi.HBSGool.exception.InvalidImageFormatException;
+import pe.edu.utp.dwi.HBSGool.exception.business.InvalidImageException;
+import pe.edu.utp.dwi.HBSGool.exception.business.InvalidImageFormatException;
 
 import java.io.IOException;
 import java.nio.file.Files;

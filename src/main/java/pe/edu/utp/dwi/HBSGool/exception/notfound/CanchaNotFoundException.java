@@ -1,4 +1,4 @@
-package pe.edu.utp.dwi.HBSGool.exception;
+package pe.edu.utp.dwi.HBSGool.exception.notfound;
 
 public class CanchaNotFoundException extends RuntimeException {
 	public CanchaNotFoundException(String message) {

@@ -10,10 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierRequest;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsCashierResult;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserRequest;
-import pe.edu.utp.dwi.HBSGool.reservacion.dto.CreateReservationAsUserResult;
+import pe.edu.utp.dwi.HBSGool.reservacion.dto.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservaciones")
@@ -31,7 +30,7 @@ public class ReservacionController {
         return ResponseEntity.ok(page);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER', 'USER')")
     @GetMapping
     public ResponseEntity<Page<ReservacionDto>> list(
             @RequestParam(name = "usuarioId", required = false) Integer usuarioId,
@@ -41,6 +40,20 @@ public class ReservacionController {
             @PageableDefault(size = 10, sort = "tiempoInicio", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<ReservacionDto> page = service.listReservaciones(usuarioId, canchaId, estado, dni, pageable);
+        return ResponseEntity.ok(page);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
+    @GetMapping("/admin")
+    public ResponseEntity<Page<ReservacionAdminDTO>> listForAdmin(
+            @RequestParam(name = "usuarioId", required = false) Integer usuarioId,
+            @RequestParam(name = "cajeroId", required = false) Integer cajeroId,
+            @RequestParam(name = "canchaId", required = false) Integer canchaId,
+            @RequestParam(name = "estado", required = false) List<String> estados,
+            @RequestParam(name = "dni", required = false) String dni,
+            @PageableDefault(size = 10, sort = "tiempoInicio", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<ReservacionAdminDTO> page = service.listReservacionesForAdmin(usuarioId, canchaId, estados, dni, pageable);
         return ResponseEntity.ok(page);
     }
 

@@ -2,7 +2,6 @@ package pe.edu.utp.dwi.HBSGool.pago;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,12 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pe.edu.utp.dwi.HBSGool.exception.ReservationNotFoundException;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoByIdDto;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/pagos")
@@ -41,8 +39,8 @@ public class PagoController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/{id}")
-    public ResponseEntity<PagoDto> getById(@PathVariable Integer id) {
-        PagoDto dto = service.getById(id);
+    public ResponseEntity<PagoByIdDto> getById(@PathVariable Integer id) {
+            PagoByIdDto dto = service.getById(id);
         if (dto == null) {
             return ResponseEntity.notFound().build();
         }

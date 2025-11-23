@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +21,9 @@ public class SesionCajeroEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idSesionCajero;
 
-    private Short cajeroId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cajeroId", referencedColumnName = "idCajero", nullable = false)
+    private CajeroEntity cajero;
 
     private Double montoInicial;
 

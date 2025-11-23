@@ -6,21 +6,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface SesionCajeroRepository extends JpaRepository<SesionCajeroEntity, Integer> {
 
+    Optional<SesionCajeroEntity> findById(Integer id);
 
     Page<SesionCajeroEntity> findAll(Pageable pageable);
 
-    Optional<SesionCajeroEntity> findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(Short cajeroId);
+    Optional<SesionCajeroEntity> findFirstByCajero_CashierIdOrderByFechaAperturaDescIdSesionCajeroDesc(Short cajeroId);
 
-    Page<SesionCajeroEntity> findByCajeroId(Short idCajero, Pageable pageable);
-    Page<SesionCajeroEntity> findByCajeroIdAndFechaAperturaBetween(Short idCajero, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
-    Page<SesionCajeroEntity> findByCajeroIdAndFechaAperturaAfter(Short idCajero, LocalDateTime inicio, Pageable pageable);
-    Page<SesionCajeroEntity> findByCajeroIdAndFechaAperturaBefore(Short idCajero, LocalDateTime fin, Pageable pageable);
+    Page<SesionCajeroEntity> findByCajero_CashierId(Short idCajero, Pageable pageable);
+    Page<SesionCajeroEntity> findByCajero_CashierIdAndFechaAperturaBetween(Short idCajero, LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
+    Page<SesionCajeroEntity> findByCajero_CashierIdAndFechaAperturaAfter(Short idCajero, LocalDateTime inicio, Pageable pageable);
+    Page<SesionCajeroEntity> findByCajero_CashierIdAndFechaAperturaBefore(Short idCajero, LocalDateTime fin, Pageable pageable);
 
     Page<SesionCajeroEntity> findByFechaAperturaBetween(LocalDateTime inicio, LocalDateTime fin, Pageable pageable);
     Page<SesionCajeroEntity> findByFechaAperturaAfter(LocalDateTime inicio, Pageable pageable);

@@ -6,16 +6,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaDto;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaEntity;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaRepositoy;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
+import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
+import pe.edu.utp.dwi.HBSGool.cajero.dto.CashierDTO;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
-import pe.edu.utp.dwi.HBSGool.exception.CashierNotFoundException;
-import pe.edu.utp.dwi.HBSGool.exception.SesionCajeroException;
-import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
+import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
+import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
+import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
+import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,11 +36,15 @@ public class SesionCajeroService {
 
     private final CierreCajeroRepository cierreCajeroRepository;
 
+    private final CierreCajeroService cierreCajeroService;
+
     private final BovedaService bovedaService;
 
     private final AuthService authService;
 
     private final CajeroService cajeroService;
+
+    private final PagoService pagoService;
 
     public SesionCajeroDto createCashierSession(CreateCashierSessionRequest createCashierSessionRequest) {
 
@@ -47,7 +57,7 @@ public class SesionCajeroService {
                 .getCashierId();
 
         Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository
-                .findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cashierId);
+                .findFirstByCajero_CashierIdOrderByFechaAperturaDescIdSesionCajeroDesc(cashierId);
 
         if (sesionCajero.isEmpty()) return createSesion(createCashierSessionRequest, cashierId);
 
@@ -61,9 +71,12 @@ public class SesionCajeroService {
     }
 
     private SesionCajeroDto createSesion(CreateCashierSessionRequest createCashierSessionRequest, Short cashierId) {
+
+        CajeroEntity cashier = cajeroService.findByCashierId(cashierId);
+
         SesionCajeroEntity entity = sesionCajeroRepository.save(
                 SesionCajeroEntity.builder()
-                        .cajeroId(cashierId)
+                        .cajero(cashier)
                         .montoInicial(createCashierSessionRequest.initialMoney())
                         .fechaApertura(LocalDateTime.now())
                         .build()
@@ -80,19 +93,59 @@ public class SesionCajeroService {
         return toDto(entity);
     }
 
-    public SesionCajeroDto getLastSesionByCajeroId(short cajeroId) {
+    public CurrentCashierSessionResult getLastSesionByCajeroId(Short cajeroId, Integer usuarioId) {
+
+        Short cashierId = cajeroId;
+
+        if (cashierId == null) {
+
+            if (usuarioId == null) {
+                throw new SesionCajeroException("Este usuario no es un cajero.");
+            }
+
+            cashierId = cajeroService.findByUserId(usuarioId)
+                    .orElseThrow(() -> new UserIsNotCashierException("Este usuario no es un cajero."))
+                    .getCashierId();
+        }
 
         Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository
-                .findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cajeroId);
+                .findFirstByCajero_CashierIdOrderByFechaAperturaDescIdSesionCajeroDesc(cashierId);
 
-        if (sesionCajero.isEmpty()) return null;
+        // el caso donde no existe ninguna sesión de cajero para este cajero
+        if (sesionCajero.isEmpty())
+            return CurrentCashierSessionResult.builder()
+                    .abierta(false)
+                    .idSesion(null)
+                    .idCierre(null)
+                    .idCajero(cajeroId)
+                    .fechaApertura(null)
+                    .montoApertura(0.0)
+                    .build();
 
         Optional<CierreCajeroEntity> cierreCajero = cierreCajeroRepository
                 .findBySesionCajeroId(sesionCajero.get().getIdSesionCajero());
 
-        if (cierreCajero.isEmpty()) return toDto(sesionCajero.get());
+        SesionCajeroEntity sesion = sesionCajero.get();
 
-        return null;
+        // Esta sesión de cajero no tiene un cierre asociado, es decir, está abierta
+        if (cierreCajero.isEmpty())
+            return CurrentCashierSessionResult.builder()
+                    .abierta(true)
+                    .montoApertura(sesion.getMontoInicial())
+                    .fechaApertura(sesion.getFechaApertura())
+                    .idSesion(sesion.getIdSesionCajero())
+                    .idCierre(null)
+                    .idCajero(cajeroId)
+                    .build();
+
+        return CurrentCashierSessionResult.builder()
+                .abierta(false)
+                .montoApertura(sesion.getMontoInicial())
+                .fechaApertura(sesion.getFechaApertura())
+                .idSesion(sesion.getIdSesionCajero())
+                .idCierre(cierreCajero.get().getIdCierreCajero())
+                .idCajero(cajeroId)
+                .build();
 
     }
 
@@ -103,13 +156,13 @@ public class SesionCajeroService {
             Pageable pageable) {
 
         if (idCajero != null && fechaInicio != null && fechaFin != null) {
-            return sesionCajeroRepository.findByCajeroIdAndFechaAperturaBetween(idCajero, fechaInicio, fechaFin, pageable);
+            return sesionCajeroRepository.findByCajero_CashierIdAndFechaAperturaBetween(idCajero, fechaInicio, fechaFin, pageable);
         } else if (idCajero != null && fechaInicio != null) {
-            return sesionCajeroRepository.findByCajeroIdAndFechaAperturaAfter(idCajero, fechaInicio, pageable);
+            return sesionCajeroRepository.findByCajero_CashierIdAndFechaAperturaAfter(idCajero, fechaInicio, pageable);
         } else if (idCajero != null && fechaFin != null) {
-            return sesionCajeroRepository.findByCajeroIdAndFechaAperturaBefore(idCajero, fechaFin, pageable);
+            return sesionCajeroRepository.findByCajero_CashierIdAndFechaAperturaBefore(idCajero, fechaFin, pageable);
         } else if (idCajero != null) {
-            return sesionCajeroRepository.findByCajeroId(idCajero, pageable);
+            return sesionCajeroRepository.findByCajero_CashierId(idCajero, pageable);
         } else if (fechaInicio != null && fechaFin != null) {
             return sesionCajeroRepository.findByFechaAperturaBetween(fechaInicio, fechaFin, pageable);
         } else if (fechaInicio != null) {
@@ -127,14 +180,21 @@ public class SesionCajeroService {
         return page.map(this::toDto);
     }
 
-    public Page<SesionCajeroDto> getById(Short cajeroId, Pageable pageable) {
-        Page<SesionCajeroEntity> page = sesionCajeroRepository.findByCajeroId(cajeroId, pageable);
+    public SesionCajeroDto getById(Integer sessionId) {
+        return sesionCajeroRepository.findById(sessionId)
+                .map(this::toDto)
+                .orElseThrow(() -> new CashierNotFoundException("No se encontró una sesión con esta ID."));
+    }
+
+    public Page<SesionCajeroDto> getByCashierId(Short cajeroId, Pageable pageable) {
+        Page<SesionCajeroEntity> page = sesionCajeroRepository.findByCajero_CashierId(cajeroId, pageable);
         return page.map(this::toDto);
     }
 
     private SesionCajeroDto toDto(SesionCajeroEntity e) {
         return SesionCajeroDto.builder()
                 .idSesionCajero(e.getIdSesionCajero())
+                .idCajero(e.getCajero().getCashierId())
                 .montoInicial(e.getMontoInicial())
                 .fechaApertura(e.getFechaApertura())
                 .build();
@@ -145,21 +205,44 @@ public class SesionCajeroService {
 
         List<SesionCajeroResumenDTO> resumen = new ArrayList<>();
         for (SesionCajeroEntity sesion : sesiones) {
-            CierreCajeroEntity cierre = cierreCajeroRepository.findBySesionCajeroId(sesion.getIdSesionCajero())
-                    .orElseThrow(() -> new CashierNotFoundException("Cajero con esta ID no encontrado."));
-            if (cierre != null) {
+
+            // Obtener los cierres de cada sesión, si es que esta sesión no tiene un cierre, quiere decir
+            // que es la sesión actual.
+            Optional<CierreCajeroEntity> cierreOption = cierreCajeroRepository.findBySesionCajeroId(sesion.getIdSesionCajero());
+
+            if (cierreOption.isPresent()) {
+                CierreCajeroEntity cierre = cierreOption.get();
+
                 resumen.add(new SesionCajeroResumenDTO(
                         sesion.getIdSesionCajero(),
-                        sesion.getCajeroId(),
+                        cajeroService.toDTO(sesion.getCajero()),
                         sesion.getFechaApertura(),
                         cierre.getFecha(),
                         cierre.getMontoTeorico(),
                         cierre.getMontoReal(),
                         cierre.getMontoReal() - cierre.getMontoTeorico()
                 ));
+            } else {
+
+                double theoricMoney = cierreCajeroService.getTheoricMoney(sesion.getIdSesionCajero());
+
+                resumen.add(
+                        SesionCajeroResumenDTO.builder()
+                                .idSesionCajero(sesion.getIdSesionCajero())
+                                .cajero(cajeroService.toDTO(sesion.getCajero()))
+                                .fechaApertura(sesion.getFechaApertura())
+                                .fechaCierre(null)
+                                .montoTeorico(theoricMoney)
+                                .montoReal(0.0)
+                                .diferencia(theoricMoney - 0.0)
+                                .build()
+                );
             }
         }
         return resumen;
     }
 
+    public Page<PagoDto> listTransactions(Integer idSesion, Pageable pageable) {
+        return pagoService.listPagos(null, idSesion, null, pageable);
+    }
 }

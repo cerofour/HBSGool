@@ -1,20 +1,26 @@
 package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto.dto.RemotePaymentConfirmationDTO;
-import pe.edu.utp.dwi.HBSGool.exception.*;
+import pe.edu.utp.dwi.HBSGool.exception.auth.NoCashierLoggedInException;
+import pe.edu.utp.dwi.HBSGool.exception.business.PaymentAlreadyCompletedException;
+import pe.edu.utp.dwi.HBSGool.exception.business.PaymentMethodMustBeRemote;
+import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.PaymentDoesntExistsException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.UsernameNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.PagoEntity;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionService;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +32,7 @@ public class RemotePaymentConfirmationService {
 	private final CajeroService cashierService;
 	private final PagoService pagoService;
 	private final ReservacionService reservationService;
+	private final SesionCajeroService sesionCajeroService;
 
 	public List<RemotePaymentConfirmationDTO> findAll(
 			Integer cashierId,
@@ -72,8 +79,14 @@ public class RemotePaymentConfirmationService {
 		ReservacionEntity reservation = reservationService.findById(payment.getReservacionId())
 				.orElseThrow(() -> new UsernameNotFoundException("No se encontró esta reservación."));
 
+		CurrentCashierSessionResult currentSession = sesionCajeroService.getLastSesionByCajeroId(cashier.getCashierId(), null);
+
 		if (reservation.getEstadoReservacion().equals("FINALIZADA"))
 			throw new PaymentAlreadyCompletedException();
+
+		if (!currentSession.getAbierta()) {
+			throw new SesionCajeroException("No existe una sesión de cajero abierta.");
+		}
 
 		// método de pago debe ser diferente a EFECTIVO, ya que este es un pago remoto.
 		if (payment.getMedioPago().equals("EFECTIVO")) {
@@ -84,12 +97,33 @@ public class RemotePaymentConfirmationService {
 				null,payment.getIdPago(), Integer.valueOf(cashier.getCashierId()), LocalDateTime.now());
 
 		repository.save(entity);
-
-		pagoService.markAsConfirmed(payment);
+		pagoService.markAsConfirmed(payment, currentSession.getIdSesion());
 		pagoService.verifyIfPaymentsAreCompleted(reservation);
 	}
 
 	private RemotePaymentConfirmationDTO toDTO(RemotePaymentConfirmationEntity x) {
+		return new RemotePaymentConfirmationDTO(
+				x.getConfirmationId(),
+				x.getPaymentId(),
+				x.getCashierId(),
+				x.getDate()
+		);
+	}
+
+	public RemotePaymentConfirmationDTO getById(Integer id) {
+		RemotePaymentConfirmationEntity x = repository.findById(id)
+				.orElseThrow(() -> new PaymentDoesntExistsException(id));
+		return new RemotePaymentConfirmationDTO(
+				x.getConfirmationId(),
+				x.getPaymentId(),
+				x.getCashierId(),
+				x.getDate()
+		);
+	}
+
+    public RemotePaymentConfirmationDTO getByPaymentId(Integer paymentId) {
+		RemotePaymentConfirmationEntity x = repository.findByPaymentId(paymentId)
+				.orElseThrow(() -> new PaymentDoesntExistsException(paymentId));
 		return new RemotePaymentConfirmationDTO(
 				x.getConfirmationId(),
 				x.getPaymentId(),

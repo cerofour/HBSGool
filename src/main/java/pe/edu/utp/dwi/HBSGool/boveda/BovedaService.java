@@ -9,15 +9,12 @@ import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
-import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
-import pe.edu.utp.dwi.HBSGool.exception.BovedaException;
-import pe.edu.utp.dwi.HBSGool.exception.SesionCajeroException;
-import pe.edu.utp.dwi.HBSGool.exception.UnauthenticatedException;
-import pe.edu.utp.dwi.HBSGool.exception.UserIsNotCashierException;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroDto;
+import pe.edu.utp.dwi.HBSGool.exception.business.BovedaException;
+import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
+import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroRepository;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 import java.util.Optional;
@@ -41,7 +38,7 @@ public class BovedaService {
 
         if (cajero.isEmpty()) throw new UserIsNotCashierException("Este usuario no es un cajero");
 
-        Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository.findFirstByCajeroIdOrderByFechaAperturaDescIdSesionCajeroDesc(cajero.get().getCashierId());
+        Optional<SesionCajeroEntity> sesionCajero = sesionCajeroRepository.findFirstByCajero_CashierIdOrderByFechaAperturaDescIdSesionCajeroDesc(cajero.get().getCashierId());
 
         if (sesionCajero.isEmpty()) throw new SesionCajeroException("Este cajero no tiene sesion abierta.");
 

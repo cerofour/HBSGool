@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pe.edu.utp.dwi.HBSGool.usuario.UsuarioEntity;
 
 @Entity
 @Table(name = "Cajero")
@@ -16,8 +17,9 @@ public class CajeroEntity {
 	@Column(name = "idCajero")
 	private Short cashierId;
 
-	@Column(name = "usuarioId")
-	private Integer userId;
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "usuarioId", referencedColumnName = "idUsuario")
+	private UsuarioEntity user;
 
 	@Column(name = "activo")
 	private Boolean active;
