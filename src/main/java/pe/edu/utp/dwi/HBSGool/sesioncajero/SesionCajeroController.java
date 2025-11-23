@@ -9,10 +9,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.utp.dwi.HBSGool.pago.PagoDto;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.TransaccionCajeroResult;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 
 import java.time.LocalDateTime;

@@ -9,6 +9,7 @@ import pe.edu.utp.dwi.HBSGool.boveda.BovedaDto;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
+import pe.edu.utp.dwi.HBSGool.cajero.dto.CashierDTO;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
@@ -16,12 +17,10 @@ import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
 import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
-import pe.edu.utp.dwi.HBSGool.pago.PagoDto;
-import pe.edu.utp.dwi.HBSGool.pago.PagoRepository;
+import pe.edu.utp.dwi.HBSGool.pago.dto.PagoDto;
 import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.TransaccionCajeroResult;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 
 import java.time.LocalDateTime;
@@ -230,7 +229,7 @@ public class SesionCajeroService {
                 resumen.add(
                         SesionCajeroResumenDTO.builder()
                                 .idSesionCajero(sesion.getIdSesionCajero())
-                                .idCajero(sesion.getCajeroId())
+                                .cajero(cajeroService.toDTO(sesion.getCajero()))
                                 .fechaApertura(sesion.getFechaApertura())
                                 .fechaCierre(null)
                                 .montoTeorico(theoricMoney)
