@@ -10,12 +10,17 @@ import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
+import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
 import pe.edu.utp.dwi.HBSGool.exception.business.UserIsNotCashierException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.business.SesionCajeroException;
 import pe.edu.utp.dwi.HBSGool.exception.auth.UnauthenticatedException;
+import pe.edu.utp.dwi.HBSGool.pago.PagoDto;
+import pe.edu.utp.dwi.HBSGool.pago.PagoRepository;
+import pe.edu.utp.dwi.HBSGool.pago.PagoService;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CreateCashierSessionRequest;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.CurrentCashierSessionResult;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.TransaccionCajeroResult;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,11 +35,15 @@ public class SesionCajeroService {
 
     private final CierreCajeroRepository cierreCajeroRepository;
 
+    private final CierreCajeroService cierreCajeroService;
+
     private final BovedaService bovedaService;
 
     private final AuthService authService;
 
     private final CajeroService cajeroService;
+
+    private final PagoService pagoService;
 
     public SesionCajeroDto createCashierSession(CreateCashierSessionRequest createCashierSessionRequest) {
 
@@ -185,9 +194,14 @@ public class SesionCajeroService {
 
         List<SesionCajeroResumenDTO> resumen = new ArrayList<>();
         for (SesionCajeroEntity sesion : sesiones) {
-            CierreCajeroEntity cierre = cierreCajeroRepository.findBySesionCajeroId(sesion.getIdSesionCajero())
-                    .orElseThrow(() -> new CashierNotFoundException("Cajero con esta ID no encontrado."));
-            if (cierre != null) {
+
+            // Obtener los cierres de cada sesión, si es que esta sesión no tiene un cierre, quiere decir
+            // que es la sesión actual.
+            Optional<CierreCajeroEntity> cierreOption = cierreCajeroRepository.findBySesionCajeroId(sesion.getIdSesionCajero());
+
+            if (cierreOption.isPresent()) {
+                CierreCajeroEntity cierre = cierreOption.get();
+
                 resumen.add(new SesionCajeroResumenDTO(
                         sesion.getIdSesionCajero(),
                         sesion.getCajeroId(),
@@ -197,9 +211,27 @@ public class SesionCajeroService {
                         cierre.getMontoReal(),
                         cierre.getMontoReal() - cierre.getMontoTeorico()
                 ));
+            } else {
+
+                double theoricMoney = cierreCajeroService.getTheoricMoney(sesion.getIdSesionCajero());
+
+                resumen.add(
+                        SesionCajeroResumenDTO.builder()
+                                .idSesionCajero(sesion.getIdSesionCajero())
+                                .idCajero(sesion.getCajeroId())
+                                .fechaApertura(sesion.getFechaApertura())
+                                .fechaCierre(null)
+                                .montoTeorico(theoricMoney)
+                                .montoReal(0.0)
+                                .diferencia(theoricMoney - 0.0)
+                                .build()
+                );
             }
         }
         return resumen;
     }
 
+    public Page<PagoDto> listTransactions(Integer idSesion, Pageable pageable) {
+        return pagoService.listPagos(null, idSesion, null, pageable);
+    }
 }
