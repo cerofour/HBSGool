@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.exception.business.InvalidMoneyAmountException;
-import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.PaymentDoesntExistsException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.dto.PagoByIdDto;
@@ -22,7 +21,6 @@ import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionEntity;
 import pe.edu.utp.dwi.HBSGool.reservacion.ReservacionRepository;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroRepository;
-import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 import pe.edu.utp.dwi.HBSGool.sesioncajero.dto.SesionCajeroDto;
 import pe.edu.utp.dwi.HBSGool.shared.FileStorageService;
 
@@ -234,7 +232,7 @@ public class PagoService {
     }
 
     @Transactional(rollbackOn = InvalidMoneyAmountException.class)
-    public PagoDto crearPago(Integer reservationId, BigDecimal cantidadDinero, String medioPago, MultipartFile evidence) throws IOException {
+    public PagoDto completeReservationPayment(Integer reservationId, Integer sesionCajeroId, BigDecimal cantidadDinero, String medioPago, MultipartFile evidence) throws IOException {
 
         CajeroEntity currentCashier = cashierService.getCurrentCashier()
                 .orElseThrow();
@@ -250,11 +248,12 @@ public class PagoService {
 
         PagoEntity pago = PagoEntity.builder()
                 .reservacionId(reservation.getIdReservacion())
-                .sesionCajeroId(null) // si en el futuro se agrega sesión de cajero
+                .sesionCajeroId(sesionCajeroId) // si en el futuro se agrega sesión de cajero
                 .cantidadDinero(cantidadDinero)
                 .fecha(LocalDateTime.now())
                 .medioPago(medioPago)
-                .estadoPago("PENDIENTE")
+                // los pagos creados por cajeros son confirmados automáticamente.
+                .estadoPago("CONFIRMADO")
                 .evidencia(evidenciaPath)
                 .build();
 
