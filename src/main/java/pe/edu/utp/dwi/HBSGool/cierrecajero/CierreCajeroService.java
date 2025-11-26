@@ -2,15 +2,16 @@ package pe.edu.utp.dwi.HBSGool.cierrecajero;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaDto;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaEntity;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaRepositoy;
+import pe.edu.utp.dwi.HBSGool.boveda.BovedaMovementRequest;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.dto.LogoutCashierRequest;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.PagoRepository;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroEntity;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroRepository;
+import pe.edu.utp.dwi.HBSGool.sesioncajero.SesionCajeroService;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class CierreCajeroService {
 
     private final CierreCajeroRepository cierreCajeroRepository;
+    private final SesionCajeroRepository sesionCajeroRepository;
 
     private final BovedaService bovedaService;
 
@@ -28,7 +30,11 @@ public class CierreCajeroService {
     }
 
     public double getTheoricMoney(Integer cashierSessionId) {
-        return pagoRepository.getTotalCashPaymentsConfirmedByCashierSessionId(cashierSessionId);
+
+        SesionCajeroEntity session = sesionCajeroRepository.findById(cashierSessionId)
+                .orElseThrow(() -> new CashierNotFoundException("Esta sesión de cajero no existe."));
+
+        return pagoRepository.getTotalCashPaymentsConfirmedByCashierSessionId(cashierSessionId) + session.getMontoInicial();
     }
 
     public CierreCajeroDto logoutCashier(LogoutCashierRequest logoutCashierRequest) {
@@ -48,7 +54,7 @@ public class CierreCajeroService {
         );
 
         bovedaService.processCashMovement(
-                BovedaDto.builder()
+                BovedaMovementRequest.builder()
                         .tipoMovimientoBoveda("INGRESO")
                         .motivo("Cierre de caja")
                         .monto(logoutCashierRequest.getMontoReal())

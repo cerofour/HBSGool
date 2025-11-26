@@ -5,11 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
-import pe.edu.utp.dwi.HBSGool.boveda.BovedaDto;
+import pe.edu.utp.dwi.HBSGool.boveda.BovedaMovementRequest;
 import pe.edu.utp.dwi.HBSGool.boveda.BovedaService;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
-import pe.edu.utp.dwi.HBSGool.cajero.dto.CashierDTO;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroRepository;
 import pe.edu.utp.dwi.HBSGool.cierrecajero.CierreCajeroService;
@@ -83,7 +82,7 @@ public class SesionCajeroService {
         );
 
         bovedaService.processCashMovement(
-                BovedaDto.builder()
+                BovedaMovementRequest.builder()
                         .tipoMovimientoBoveda("RETIRO")
                         .motivo("Apertura de caja")
                         .monto(entity.getMontoInicial())
@@ -234,7 +233,7 @@ public class SesionCajeroService {
                                 .fechaCierre(null)
                                 .montoTeorico(theoricMoney)
                                 .montoReal(0.0)
-                                .diferencia(theoricMoney - 0.0)
+                                .diferencia(0.0 - theoricMoney)
                                 .build()
                 );
             }

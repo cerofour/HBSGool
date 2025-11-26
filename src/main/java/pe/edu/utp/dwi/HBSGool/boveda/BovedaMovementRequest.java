@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BovedaDto {
-    private int idMovimientoBoveda;
+public class BovedaMovementRequest {
     private String tipoMovimientoBoveda;
     private String motivo;
     private double monto;
