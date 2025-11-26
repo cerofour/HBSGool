@@ -65,11 +65,12 @@ public class PagoController {
     @PostMapping(value = "/reservacion/{reservationId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PagoDto> crearPago(
             @PathVariable Integer reservationId,
+            @RequestParam Integer sesionCajeroId,
             @RequestParam BigDecimal cantidadDinero,
             @RequestParam String medioPago,
             @RequestParam(required = false) MultipartFile evidencia
     ) throws IOException {
-        PagoDto pagoDto = service.crearPago(reservationId, cantidadDinero, medioPago, evidencia);
+        PagoDto pagoDto = service.completeReservationPayment(reservationId, sesionCajeroId, cantidadDinero, medioPago, evidencia);
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoDto);
     }
 
