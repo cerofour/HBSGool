@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroEntity;
 import pe.edu.utp.dwi.HBSGool.cajero.CajeroService;
 import pe.edu.utp.dwi.HBSGool.exception.business.InvalidMoneyAmountException;
+import pe.edu.utp.dwi.HBSGool.exception.notfound.CashierNotFoundException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.PaymentDoesntExistsException;
 import pe.edu.utp.dwi.HBSGool.exception.notfound.ReservationNotFoundException;
 import pe.edu.utp.dwi.HBSGool.pago.dto.PagoByIdDto;
@@ -161,22 +162,31 @@ public class PagoService {
 
     private PagoByIdDto toByIdDto(PagoEntity e) {
 
-        Optional<SesionCajeroEntity> sesion = sesionCajeroService.findById(e.getSesionCajeroId());
-                //.orElseThrow(() -> new CashierNotFoundException("Sesión de cajero para este pago no existe"));
+        boolean paymentHasSessionId = false;
 
-        Function<Optional<SesionCajeroEntity>, SesionCajeroDto> buildCashierSession =
-                (s) ->
-                        s.map(sesionCajeroEntity -> SesionCajeroDto.builder()
+        if (e.getSesionCajeroId() != null)
+            paymentHasSessionId = true;
+
+        SesionCajeroEntity sesion =
+                paymentHasSessionId
+                        ?
+                    sesionCajeroService.findById(e.getSesionCajeroId())
+                            .orElseThrow(() -> new CashierNotFoundException("Sesión de cajero para este pago no existe."))
+                        : null;
+
+
+        Function<SesionCajeroEntity, SesionCajeroDto> buildCashierSession =
+                (sesionCajeroEntity) ->
+                        SesionCajeroDto.builder()
                             .idSesionCajero(sesionCajeroEntity.getIdSesionCajero())
                             .idCajero(sesionCajeroEntity.getCajero().getCashierId())
-                            .build())
-                                .orElse(null);
+                            .build();
 
         return PagoByIdDto.builder()
                 .idPago(e.getIdPago())
                 .reservacionId(e.getReservacionId())
                 .sesionCajero(
-                        e.getEstadoPago().equals("CONFIRMADO")
+                        e.getEstadoPago().equals("CONFIRMADO") || paymentHasSessionId
                                 ? buildCashierSession.apply(sesion)
                                 : null
                 )
