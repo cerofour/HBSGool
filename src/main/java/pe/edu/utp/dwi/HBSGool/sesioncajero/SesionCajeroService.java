@@ -2,6 +2,7 @@ package pe.edu.utp.dwi.HBSGool.sesioncajero;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
@@ -199,7 +200,7 @@ public class SesionCajeroService {
                 .build();
     }
 
-    public List<SesionCajeroResumenDTO> getCashierClosureSummary(Short idCajero, LocalDateTime fechaInicio, LocalDateTime fechaFin, Pageable pageable) {
+    public Page<SesionCajeroResumenDTO> getCashierClosureSummary(Short idCajero, LocalDateTime fechaInicio, LocalDateTime fechaFin, Pageable pageable) {
         Page<SesionCajeroEntity> sesiones = findFilteredSesions(idCajero, fechaInicio, fechaFin, pageable);
 
         List<SesionCajeroResumenDTO> resumen = new ArrayList<>();
@@ -238,7 +239,7 @@ public class SesionCajeroService {
                 );
             }
         }
-        return resumen;
+        return new PageImpl<>(resumen, pageable, sesiones.getTotalElements());
     }
 
     public Page<PagoDto> listTransactions(Integer idSesion, Pageable pageable) {
