@@ -120,7 +120,7 @@ public class ReservacionService {
                 .dni(request.dni())
                 .duracion(reservationDuration)
                 .precioTotal(BigDecimal.valueOf(totalPrice))
-                .estadoReservacion("CONFIRMADA")
+                .estadoReservacion((totalPrice - request.montoInicial()) == 0 ? "CONFIRMADA" : "SALDO")
                 .build();
 
         // Guardamos el archivo de evidencia
@@ -133,7 +133,7 @@ public class ReservacionService {
         PagoEntity payment = pagoService.createPayment(
                 reservation.getIdReservacion(),
                 sesionCajero.getIdSesion(),
-                BigDecimal.valueOf(totalPrice),
+                BigDecimal.valueOf(request.montoInicial()),
                 request.medioPago(),
                 evidencePath,
                 "CONFIRMADO"
@@ -146,7 +146,8 @@ public class ReservacionService {
                 reservation.getTiempoInicio(),
                 reservation.getDuracion().toString(),
                 reservation.getPrecioTotal(),
-                reservation.getEstadoReservacion()
+                reservation.getEstadoReservacion(),
+                totalPrice - request.montoInicial()
         );
     }
 
