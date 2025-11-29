@@ -335,16 +335,14 @@ public class ReservacionService {
 
             List<PagoEntity> payments = pagoService.findByReservationId(reservation.getIdReservacion());
 
-            if (reservation.getEstadoReservacion().equals("CONFIRMADA")) {
+            if (reservation.getEstadoReservacion().equals("CONFIRMADA"))
                 dtoBuilder.saldo(new BigDecimal("0.0"));
-                dtoBuilder.pagos(List.of());
-            }
-            else {
+            else
                 dtoBuilder.saldo(reservation.getPrecioTotal().subtract(getTotalPayment(payments)));
-                dtoBuilder.pagos(
-                        payments.stream().map(PagoEntity::getIdPago).toList()
-                );
-            }
+
+            dtoBuilder.pagos(
+                    payments.stream().map(PagoEntity::getIdPago).toList()
+            );
 
             return dtoBuilder.build();
         });
