@@ -1,6 +1,9 @@
 package pe.edu.utp.dwi.HBSGool.confirmacionPagoRemoto;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.dwi.HBSGool.auth.AuthService;
@@ -34,35 +37,40 @@ public class RemotePaymentConfirmationService {
 	private final ReservacionService reservationService;
 	private final SesionCajeroService sesionCajeroService;
 
-	public List<RemotePaymentConfirmationDTO> findAll(
+	public Page<RemotePaymentConfirmationDTO> findAll(
 			Integer cashierId,
 			LocalDateTime date,
 			LocalDateTime startDate,
-			LocalDateTime endDate
+			LocalDateTime endDate,
+            Pageable pageable
 	) {
-		List<RemotePaymentConfirmationEntity> result;
+		Page<RemotePaymentConfirmationEntity> result;
 
 		if (cashierId != null && startDate != null && endDate != null) {
-			result = repository.findByCashierIdAndDateBetween(cashierId, startDate, endDate);
+			result = repository.findByCashierIdAndDateBetween(cashierId, startDate, endDate, pageable);
 		} else if (cashierId != null && date != null) {
+            Page<RemotePaymentConfirmationEntity> page = repository.findByCashierId(cashierId, pageable);
 			// Si quiere filtrar por cajero y fecha exacta
-			result = repository.findByCashierId(cashierId)
-					.stream()
-					.filter(x -> x.getDate().toLocalDate().equals(date.toLocalDate()))
-					.toList();
+            List<RemotePaymentConfirmationEntity> list = page.getContent()
+                    .stream()
+                    .filter(x -> x.getDate().toLocalDate().equals(date.toLocalDate()))
+                    .toList();
+			result = new PageImpl<>(
+                    list,
+                    page.getPageable(),
+                    list.size()
+            );
 		} else if (cashierId != null) {
-			result = repository.findByCashierId(cashierId);
+			result = repository.findByCashierId(cashierId, pageable);
 		} else if (startDate != null && endDate != null) {
-			result = repository.findByDateBetween(startDate, endDate);
+			result = repository.findByDateBetween(startDate, endDate, pageable);
 		} else if (date != null) {
-			result = repository.findByDate(date);
+			result = repository.findByDate(date, pageable);
 		} else {
-			result = repository.findAll();
+			result = repository.findAll(pageable);
 		}
 
-		return result.stream()
-				.map(this::toDTO)
-				.toList();
+		return result.map(this::toDTO);
 	}
 
 	/// Realiza la confirmación de un pago remoto, extrae el cashierId del usuario logueado actualmente.

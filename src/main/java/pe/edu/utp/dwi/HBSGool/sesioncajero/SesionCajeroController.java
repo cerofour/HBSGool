@@ -26,7 +26,7 @@ public class SesionCajeroController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CASHIER')")
     @GetMapping("/resumen")
-    public List<SesionCajeroResumenDTO> getSesionesCajero(
+    public Page<SesionCajeroResumenDTO> getSesionesCajero(
             @RequestParam(name = "idCajero", required=true) Short idCajero,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
