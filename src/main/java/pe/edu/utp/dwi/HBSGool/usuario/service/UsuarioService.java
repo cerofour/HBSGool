@@ -14,9 +14,20 @@ import pe.edu.utp.dwi.HBSGool.usuario.dto.UsuarioResult;
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
-    public Page<UsuarioResult> findAllUsers(Pageable pageable) {
-        return usuarioRepository.findAll(pageable)
-                .map(this::toUsuarioResult);
+    public Page<UsuarioResult> findAllUsers(String name, String dni, Boolean active, Pageable pageable) {
+        Page<UsuarioEntity> result;
+
+        if (name != null && !name.isEmpty()) {
+            result = usuarioRepository.findByName(name, pageable);
+        }else if(dni != null && !dni.isEmpty()) {
+            result = usuarioRepository.findByDni(dni, pageable);
+        }else if(active != null) {
+            result = usuarioRepository.findByActive(active, pageable);
+        }else {
+            result = usuarioRepository.findAll(pageable);
+        }
+
+        return result.map(this::toUsuarioResult);
     }
 
     public UsuarioResult findById(Integer id) {

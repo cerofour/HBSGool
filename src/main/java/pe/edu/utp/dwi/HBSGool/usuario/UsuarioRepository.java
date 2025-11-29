@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Integer> {
 	Page<UsuarioEntity> findAll(Pageable pageable);
 	Optional<UsuarioEntity> findByEmail(String email);
+    Page<UsuarioEntity> findByName(String name, Pageable pageable);
+    Page<UsuarioEntity> findByDni(String dni, Pageable pageable);
+    Page<UsuarioEntity> findByActive(Boolean active, Pageable pageable);
 }
