@@ -3,7 +3,7 @@ CREATE TABLE Usuario (
 	nombre VARCHAR(40) NOT NULL,
 	apellidoPaterno VARCHAR(40) NOT NULL,
 	apellidoMaterno VARCHAR(40) NOT NULL,
-	dni CHAR(8) UNIQUE NOT NULL,
+	dni VARCHAR(12) UNIQUE NOT NULL,
 	telefono CHAR(9) UNIQUE NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
 	activo BOOLEAN NOT NULL DEFAULT TRUE,
@@ -11,7 +11,7 @@ CREATE TABLE Usuario (
 	rol VARCHAR(16) NOT NULL DEFAULT 'ROLE_USER',
 	CONSTRAINT chkUsuarioEmail CHECK (email ~ '^[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,5}$'),
 	CONSTRAINT chkUsuarioTelefono CHECK (telefono ~ '^\d{9}$'),
-	CONSTRAINT chkUsuarioDni CHECK (dni ~ '^\d{8}$')
+	CONSTRAINT chkUsuarioDni CHECK (dni ~ '^[0-9]{8}$' OR dni ~ '^[0-9]{12}$')
 
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE Reservacion (
 	canchaId SMALLINT NOT NULL,
 	cajeroId SMALLINT,
 	tiempoInicio TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-	dni CHAR(8) NOT NULL,
+	dni VARCHAR(12) NOT NULL,
 	duracion INTERVAL NOT NULL,
 	precioTotal NUMERIC(10, 2) NOT NULL,
 	estadoReservacion VARCHAR(16) NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE Reservacion (
 	FOREIGN KEY (cajeroId) REFERENCES Cajero(idCajero),
 	CONSTRAINT chkReservacionPrecioTotal CHECK (precioTotal >= 0),
 	CONSTRAINT chkReservacionDuracion CHECK (duracion >= INTERVAL '1 hour'),
-	CONSTRAINT chkReservacionDni CHECK (dni ~ '^\d{8}$'),
+	CONSTRAINT chkReservacionDni CHECK (dni ~ '^[0-9]{8}$' OR dni ~ '^[0-9]{12}$'),
 	CONSTRAINT chkReservacionEstadoReservacion CHECK (estadoReservacion in ('POR CONFIRMAR', 'CONFIRMADA', 'SALDO', 'CANCELADA', 'FINALIZADA'))
 
 
@@ -132,11 +132,11 @@ CREATE TABLE ConfirmacionPagoRemoto (
 
 CREATE TABLE MovimientoBoveda (
 	idMovimientoBoveda INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-	sesionCajeroId INT,
+	usuarioId INT,
 	tipoMovimientoBoveda VARCHAR(16) NOT NULL,
 	monto DECIMAL(6, 2) NOT NULL,
 	motivo VARCHAR(32) NOT NULL,
-	FOREIGN KEY (sesionCajeroId) REFERENCES SesionCajero(idSesionCajero)
+	FOREIGN KEY (usuarioId) REFERENCES Usuario(idUsuario)
 
 );
 
