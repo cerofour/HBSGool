@@ -18,7 +18,7 @@ public class RegisterRequestDTO {
 	String apellidoPaterno;
 
 	@NotBlank(message = "El campo 'dni' no puede estar vacío.")
-	@Pattern(regexp = "\\d{8}", message = "El campo 'dni' debe ser una cadena de 8 números sin espacios.")
+	@Pattern(regexp = "^(\\d{8}|\\d{12})$", message = "El campo 'dni' debe ser una cadena de 8 o 12 números sin espacios.")
 	String dni;
 
 	@NotBlank(message = "El campo 'celular' no puede estar vacío.")
