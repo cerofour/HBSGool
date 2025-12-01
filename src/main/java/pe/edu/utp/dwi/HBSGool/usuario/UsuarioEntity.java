@@ -27,8 +27,7 @@ public class UsuarioEntity {
 	@Column(nullable = false, length = 40, name = "apellidoMaterno")
 	private String motherLastname;
 
-	@Pattern(regexp = "^\\d{8}$", message = "El DNI debe tener 8 dígitos")
-	@Column(unique = true, nullable = false, length = 8, name = "dni")
+	@Column(unique = true, nullable = false, name = "dni")
 	private String dni;
 
 	@Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener 9 dígitos")
