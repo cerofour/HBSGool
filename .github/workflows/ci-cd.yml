@@ -26,7 +26,7 @@ jobs:
 
       - name: Run tests
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://152.67.46.79:5433/hbsgooldb
+          SPRING_DATASOURCE_URL: jdbc:postgresql://18.222.169.167:5433/hbsgooldb
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USER }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASS }}
         run: mvn -B test
@@ -61,7 +61,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "*.jar"
-          target: "/home/opc/HBSGool/target/"
+          target: "/home/ubuntu/HBSGool/target/"
 
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
@@ -70,6 +70,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /home/opc/HBSGool
+            cd /home/ubuntu/HBSGool
             sudo docker compose down
             sudo docker compose up -d --build
