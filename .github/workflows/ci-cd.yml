@@ -26,7 +26,7 @@ jobs:
 
       - name: Run tests
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://18.222.169.167:5433/hbsgooldb
+          SPRING_DATASOURCE_URL: jdbc:postgresql://20.42.109.216:5432/hbsgooldb
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USER }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASS }}
         run: mvn -B test
@@ -43,27 +43,43 @@ jobs:
           path: target/*.jar
 
   deploy:
-    name: Deploy to Server
+    name: Build Image & Deploy
     needs: ci
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
+      # Necesario para tener el Dockerfile
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download JAR artifact
         uses: actions/download-artifact@v4
         with:
           name: app
 
-      - name: Upload JAR to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "*.jar"
-          target: "/home/ubuntu/HBSGool/target/"
+      - name: Rename JAR
+        run: mv *.jar app.jar
 
-      - name: Restart service
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hbsgool-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hbsgool-backend:${{ github.sha }}
+
+      - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -71,5 +87,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /home/ubuntu/HBSGool
-            sudo docker compose down
-            sudo docker compose up -d --build
+            sudo docker compose pull backend
+            sudo docker compose up -d backend
+            sudo docker image prune -f

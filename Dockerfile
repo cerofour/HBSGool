@@ -3,8 +3,15 @@
 #COPY . .
 #RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:24-jdk
+#FROM eclipse-temurin:24-jdk
+#WORKDIR /app
+#COPY ./target/*.jar app.jar
+#EXPOSE 8081
+#ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+FROM eclipse-temurin:24-jre
 WORKDIR /app
-COPY ./target/*.jar app.jar
-EXPOSE 8081
+COPY app.jar app.jar
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
